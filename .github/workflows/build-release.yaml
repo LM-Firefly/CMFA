@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
 
@@ -41,7 +41,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      
+
       - name: Convert and set version env
         id: process-version
         run: |
@@ -49,10 +49,10 @@ jobs:
           VERSION_TAG=${VERSION_TAG#v}                              # remove the 'v' prefix
           IFS='.' read -ra VERSION_PARTS <<< "$VERSION_TAG"         # split into array
           VERSION_CODE=$(printf "%1d%02d%03d" "${VERSION_PARTS[0]}" "${VERSION_PARTS[1]}" "${VERSION_PARTS[2]}")
-          
+
           echo "versonName=$VERSION_TAG" >> $GITHUB_OUTPUT          # "1.2.3"
           echo "versonCode=$VERSION_CODE" >> $GITHUB_OUTPUT         # "102003"
-      
+
       # Re-write version in build.gradle.kts
       - name: Re-write version
         uses: Devofure/advance-android-version-actions@v1.5
@@ -60,7 +60,7 @@ jobs:
           gradlePath: build.gradle.kts
           versionCode: ${{ steps.process-version.outputs.versonCode }}
           versionName: ${{ steps.process-version.outputs.versonName }}
-      
+
       # If any change found, commit it and push
       - name: Commit and push if changes
         run: |
@@ -87,7 +87,7 @@ jobs:
           echo keystore.password="$SIGNING_STORE_PASSWORD" > signing.properties
           echo key.alias="$SIGNING_KEY_ALIAS" >> signing.properties
           echo key.password="$SIGNING_KEY_PASSWORD" >> signing.properties
-            
+
           echo "cat signing.properties"
           cat signing.properties
 
@@ -103,7 +103,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: ${{ success() }}
         with:
           tag_name: ${{ inputs.release-tag }}
