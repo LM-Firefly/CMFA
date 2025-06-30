@@ -7,11 +7,12 @@ on:
 
 jobs:
   BuildPreRelease:
+  #    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Checkout submodules
         run: git submodule update --init --recursive --force
 
@@ -48,7 +49,7 @@ jobs:
           echo keystore.password="$SIGNING_STORE_PASSWORD" > signing.properties
           echo key.alias="$SIGNING_KEY_ALIAS" >> signing.properties
           echo key.password="$SIGNING_KEY_PASSWORD" >> signing.properties
-            
+
           echo "cat signing.properties"
           cat signing.properties
 

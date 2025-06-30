@@ -8,10 +8,12 @@ on:
 jobs:
   update-dependencies:
     runs-on: ubuntu-latest
+    env:
+      GIT_TOKEN: ${{secrets.ACTIONS_TOKEN}}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-      
+
       - name: Checkout and Update submodules
         run: git submodule update --init --recursive --remote --force
 
@@ -25,7 +27,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24"
-      
+
       - uses: actions/cache@v4
         with:
           path: |
@@ -51,17 +53,18 @@ jobs:
           update-go-mod-replace ${{ github.workspace }}/core/src/foss/golang/clash/go.mod $(pwd)/go.mod
           go mod tidy
 
-      - uses: tibdex/github-app-token@v2
-        id: generate-token
-        with:
-          app_id: ${{ secrets.MAINTAINER_APPID }}
-          private_key: ${{ secrets.MAINTAINER_APP_PRIVATE_KEY }}
+#      - uses: tibdex/github-app-token@v2
+#        id: generate-token
+#        with:
+#          app_id: ${{ secrets.MAINTAINER_APPID }}
+#          private_key: ${{ secrets.MAINTAINER_APP_PRIVATE_KEY }}
 
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+#          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{env.GIT_TOKEN}}
           commit-message: Update Dependencies
           branch: update-dependencies
           delete-branch: true
@@ -72,10 +75,9 @@ jobs:
             - Update Go Module Dependecies
           labels: |
             Update
-        
+
       - name: PR result
         if: ${{ steps.cpr.outputs.pull-request-number }}
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-      

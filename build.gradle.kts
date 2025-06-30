@@ -35,7 +35,7 @@ subprojects {
         buildFeatures.buildConfig = true
         defaultConfig {
             if (isApp) {
-                applicationId = "com.github.metacubex.clash"
+                applicationId = "com.github.metacubex.mihomo"
             }
 
             project.name.let { name ->
@@ -94,9 +94,6 @@ subprojects {
                 resValue("string", "launch_name", "@string/launch_name_alpha")
                 resValue("string", "application_name", "@string/application_name_alpha")
 
-                if (isApp) {
-                    applicationIdSuffix = ".alpha"
-                }
             }
 
             create("meta") {
@@ -108,10 +105,6 @@ subprojects {
 
                 resValue("string", "launch_name", "@string/launch_name_meta")
                 resValue("string", "application_name", "@string/application_name_meta")
-
-                if (isApp) {
-                    applicationIdSuffix = ".meta"
-                }
             }
         }
 
