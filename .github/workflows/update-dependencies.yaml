@@ -12,7 +12,7 @@ jobs:
       GIT_TOKEN: ${{secrets.ACTIONS_TOKEN}}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Checkout and Update submodules
         run: git submodule update --init --recursive --remote --force
