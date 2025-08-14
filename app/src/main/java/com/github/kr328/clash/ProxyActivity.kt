@@ -72,10 +72,19 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
 
                                 state.now = group.now
 
+                                // 修改此处，允许对URLTest、LoadBalance和Fallback类型的代理组进行选择操作
+                                val selectable = when (group.type) {
+                                    Proxy.Type.Selector -> true
+                                    Proxy.Type.URLTest -> true
+                                    Proxy.Type.Fallback -> true
+                                    Proxy.Type.LoadBalance -> true
+                                    else -> false
+                                }
+
                                 design.updateGroup(
                                     it.index,
                                     group.proxies,
-                                    group.type == Proxy.Type.Selector,
+                                    selectable,
                                     state,
                                     unorderedStates
                                 )
