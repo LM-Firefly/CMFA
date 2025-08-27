@@ -29,7 +29,8 @@ class ProxyAdapter(
                 clicked(current.proxy.name)
             }
 
-            val isSelector = selectable
+            // 对于所有类型的代理组都启用可点击和可聚焦状态
+            val isSelector = selectable || current.proxy.type.group
 
             isFocusable = isSelector
             isClickable = isSelector
