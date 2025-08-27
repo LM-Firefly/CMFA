@@ -58,7 +58,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="@dimen/item_tailing_margin"
-                        android:layout_toStartOf="@id/menu_view">
+                        android:layout_toStartOf="@id/group_dropdown_view">
 
                         <ImageView
                             android:id="@+id/url_test_view"
@@ -79,6 +79,28 @@
                             android:layout_height="@dimen/item_tailing_component_size"
                             android:visibility="gone" />
                     </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/group_dropdown_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/item_tailing_component_size"
+                        android:layout_toStartOf="@id/menu_view"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/item_tailing_margin"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:text="@string/group_dropdown"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                        android:drawableEnd="@drawable/ic_baseline_arrow_drop_down"
+                        android:drawablePadding="4dp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:minWidth="40dp"
+                        android:textColor="?android:textColorPrimary" />
 
                     <ImageView
                         android:id="@+id/menu_view"

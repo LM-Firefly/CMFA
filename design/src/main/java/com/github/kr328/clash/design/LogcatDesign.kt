@@ -66,5 +66,10 @@ class LogcatDesign(
             }
         }
         binding.recyclerList.adapter = adapter
+
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.deleteView.applyRoundedSelectableBackground(radius)
+        binding.exportView.applyRoundedSelectableBackground(radius)
+        binding.closeView.applyRoundedSelectableBackground(radius)
     }
 }

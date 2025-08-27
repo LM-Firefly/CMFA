@@ -22,6 +22,7 @@
         android:orientation="vertical">
 
         <com.github.kr328.clash.design.view.LargeActionLabel
+            android:id="@+id/update_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:onClick="@{() -> master.requestUpdate(self, profile)}"
