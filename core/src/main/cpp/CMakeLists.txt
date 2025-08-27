@@ -1,36 +1,73 @@
 cmake_minimum_required(VERSION 3.0)
 
-# 获取git hash
-
+# 获取 git 信息（健壮处理：无 git 或不在仓库时给出回退值）
 message(STATUS "CMAKE_CURRENT_SOURCE_DIR= ${CMAKE_CURRENT_SOURCE_DIR}")
-execute_process(
-  COMMAND git submodule foreach git log -1 --format=%H   
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-  OUTPUT_VARIABLE COMMIT_HASH
-)
-string(REPLACE "\n" ";" COMMIT_HASH "${COMMIT_HASH}")
-list(GET COMMIT_HASH 1 COMMIT_HASH)
-string (REGEX REPLACE "[\n\t\r]" "" COMMIT_HASH ${COMMIT_HASH})
-string(SUBSTRING ${COMMIT_HASH} 0 7 COMMIT_HASH)
-message(STATUS "git hash= ${COMMIT_HASH}")
 
-# 获取分支名称
-execute_process(
-  COMMAND git submodule foreach git branch -r --contains ${COMMIT_HASH}
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} 
-  OUTPUT_VARIABLE CURRENT_BRANCH
-)
-string(REPLACE "\n" ";" CURRENT_BRANCH "${CURRENT_BRANCH}")
-list(GET CURRENT_BRANCH 1 CURRENT_BRANCH)
-string (REGEX REPLACE "origin/" "" CURRENT_BRANCH ${CURRENT_BRANCH})
-string (REGEX REPLACE "[\n\t\r]" "" CURRENT_BRANCH ${CURRENT_BRANCH})
-#string(SUBSTRING ${CURRENT_BRANCH} 0 8 CURRENT_BRANCH)
+# 解析 mihomo 子模块路径，优先使用该仓库的 git 信息
+get_filename_component(_parent_dir "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)      # core/src/main
+get_filename_component(_src_root "${_parent_dir}" DIRECTORY)                     # core/src
+set(MIHOMO_SUBMODULE_DIR "${_src_root}/foss/golang/clash")
+
+if (NOT EXISTS "${MIHOMO_SUBMODULE_DIR}")
+  message(WARNING "mihomo submodule directory not found at ${MIHOMO_SUBMODULE_DIR}, fallback to current source dir")
+  set(MIHOMO_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+endif ()
+
+# 查找 git 可执行文件
+find_program(GIT_EXECUTABLE git)
+
+set(COMMIT_HASH "")
+set(CURRENT_BRANCH "")
+
+if (GIT_EXECUTABLE)
+  # 获取短哈希（7位），失败则留空以便后续回退
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short=7 HEAD
+    WORKING_DIRECTORY ${MIHOMO_SUBMODULE_DIR}
+    OUTPUT_VARIABLE COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+
+  # 获取分支名；若处于 detached HEAD 则退化为 describe
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${MIHOMO_SUBMODULE_DIR}
+    OUTPUT_VARIABLE CURRENT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+
+  if ("${CURRENT_BRANCH}" STREQUAL "HEAD" OR "${CURRENT_BRANCH}" STREQUAL "")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
+      WORKING_DIRECTORY ${MIHOMO_SUBMODULE_DIR}
+      OUTPUT_VARIABLE CURRENT_BRANCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+  endif ()
+endif ()
+
+# 回退默认值，避免空字符串导致后续 string()/list() 报错
+if (NOT COMMIT_HASH OR COMMIT_HASH STREQUAL "")
+  set(COMMIT_HASH "0000000")
+endif ()
+if (NOT CURRENT_BRANCH OR CURRENT_BRANCH STREQUAL "")
+  set(CURRENT_BRANCH "unknown")
+endif ()
+
+# 清洗分支名：去掉 Prerelease- 前缀及 -dirty 等尾缀
+string(REGEX REPLACE "^Prerelease-" "" CURRENT_BRANCH "${CURRENT_BRANCH}")
+string(REGEX REPLACE "-dirty$" "" CURRENT_BRANCH "${CURRENT_BRANCH}")
+
+message(STATUS "git hash= ${COMMIT_HASH}")
 message(STATUS "git current branch = ${CURRENT_BRANCH}")
 
 # 获取生成时间
 string(TIMESTAMP COMPILE_TIME "%y%m%d")
-string (REGEX REPLACE "[\n\t\r]" "" COMPILE_TIME ${COMPILE_TIME})
-string(REGEX REPLACE "\"" "" COMPILE_TIME ${COMPILE_TIME})
+string (REGEX REPLACE "[\n\t\r]" "" COMPILE_TIME "${COMPILE_TIME}")
+string(REGEX REPLACE "\"" "" COMPILE_TIME "${COMPILE_TIME}")
 
 # 生成版本信息
 set(GIT_VERSION "${CURRENT_BRANCH}_${COMMIT_HASH}_${COMPILE_TIME}")

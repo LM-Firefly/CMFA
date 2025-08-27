@@ -4,7 +4,6 @@ package com.github.kr328.clash.service.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.github.kr328.clash.core.util.Parcelizer
 import com.github.kr328.clash.service.util.UUIDSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -22,31 +21,69 @@ data class Profile(
     var download: Long,
     val total: Long,
     val expire: Long,
-
-
     val updatedAt: Long,
     val imported: Boolean,
     val pending: Boolean,
 ) : Parcelable {
-    enum class Type {
-        File, Url, External
+    enum class Type { File, Url, External }
+
+    override fun describeContents(): Int = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeString(uuid.toString())
+        dest.writeString(name)
+        dest.writeInt(type.ordinal)
+        dest.writeString(source)
+        dest.writeInt(if (active) 1 else 0)
+        dest.writeLong(interval)
+        dest.writeLong(upload)
+        dest.writeLong(download)
+        dest.writeLong(total)
+        dest.writeLong(expire)
+        dest.writeLong(updatedAt)
+        dest.writeInt(if (imported) 1 else 0)
+        dest.writeInt(if (pending) 1 else 0)
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        Parcelizer.encodeToParcel(serializer(), parcel, this)
-    }
+    companion object {
+        @JvmStatic
+        private fun readBoolean(parcel: Parcel): Boolean = parcel.readInt() != 0
 
-    override fun describeContents(): Int {
-        return 0
-    }
+        @JvmField
+        val CREATOR: Parcelable.Creator<Profile> = object : Parcelable.Creator<Profile> {
+            override fun createFromParcel(parcel: Parcel): Profile {
+                val uuid = parcel.readString()?.let { UUID.fromString(it) }
+                    ?: throw IllegalStateException("Null UUID in parcel")
+                val name = parcel.readString()!!
+                val type = Type.values()[parcel.readInt()]
+                val source = parcel.readString()!!
+                val active = readBoolean(parcel)
+                val interval = parcel.readLong()
+                val upload = parcel.readLong()
+                val download = parcel.readLong()
+                val total = parcel.readLong()
+                val expire = parcel.readLong()
+                val updatedAt = parcel.readLong()
+                val imported = readBoolean(parcel)
+                val pending = readBoolean(parcel)
+                return Profile(
+                    uuid = uuid,
+                    name = name,
+                    type = type,
+                    source = source,
+                    active = active,
+                    interval = interval,
+                    upload = upload,
+                    download = download,
+                    total = total,
+                    expire = expire,
+                    updatedAt = updatedAt,
+                    imported = imported,
+                    pending = pending,
+                )
+            }
 
-    companion object CREATOR : Parcelable.Creator<Profile> {
-        override fun createFromParcel(parcel: Parcel): Profile {
-            return Parcelizer.decodeFromParcel(serializer(), parcel)
-        }
-
-        override fun newArray(size: Int): Array<Profile?> {
-            return arrayOfNulls(size)
+            override fun newArray(size: Int): Array<Profile?> = arrayOfNulls(size)
         }
     }
 }
