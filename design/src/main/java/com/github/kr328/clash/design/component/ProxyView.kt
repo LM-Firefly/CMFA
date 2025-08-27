@@ -4,9 +4,14 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
+import android.util.AttributeSet
 import android.view.View
 import com.github.kr328.clash.common.compat.getDrawableCompat
-import com.github.kr328.clash.design.store.UiStore
+import com.github.kr328.clash.design.R
+import com.github.kr328.clash.common.compat.getColorCompat
+import com.github.kr328.clash.core.model.Proxy
+import com.github.kr328.clash.core.model.ProxyGroup
 
 class ProxyView(
     context: Context,
@@ -19,6 +24,12 @@ class ProxyView(
 
     var state: ProxyViewState? = null
     constructor(context: Context) : this(context, ProxyViewConfig(context, 2))
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : this(
+        context,
+        ProxyViewConfig(context, 2)
+    )
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val state = state ?: return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 

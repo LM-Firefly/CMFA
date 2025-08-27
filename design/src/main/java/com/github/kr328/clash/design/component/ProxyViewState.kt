@@ -24,6 +24,7 @@ class ProxyViewState(
     var delayText: String = ""
     var background: Int = config.unselectedBackground
     var controls: Int = config.unselectedControl
+    var isUnfixedProxy: Boolean = false
 
     private var delay: Int = 0
     private var selected: Boolean = false
@@ -64,6 +65,8 @@ class ProxyViewState(
         if (parentNow !== parent.now) {
             parentNow = parent.now
             selected = proxy.name == parent.now
+            // 检查是否为取消固定的代理节点
+            isUnfixedProxy = selected && parent.now.isEmpty()
         }
 
         controls = if (selected) config.selectedControl else config.unselectedControl

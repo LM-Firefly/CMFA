@@ -91,6 +91,17 @@ func patchSelector(selector, name C.c_string) C.int {
 	return 0
 }
 
+//export unfixedProxy
+func unfixedProxy(selector C.c_string) C.int {
+	s := C.GoString(selector)
+	
+	if tunnel.UnfixedProxy(s) {
+		return 1
+	}
+	
+	return 0
+}
+
 //export queryProviders
 func queryProviders() *C.char {
 	return marshalJson(tunnel.QueryProviders())
