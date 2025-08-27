@@ -9,6 +9,8 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.ComponentActionLabelBinding
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 class ActionLabel @JvmOverloads constructor(
@@ -58,5 +60,8 @@ class ActionLabel @JvmOverloads constructor(
                 recycle()
             }
         }
+
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.root.applyRoundedSelectableBackground(radius)
     }
 }

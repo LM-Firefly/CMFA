@@ -4,8 +4,10 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.Window
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.OnBackPressedCallback
 import com.github.kr328.clash.common.compat.isAllowForceDarkCompat
 import com.github.kr328.clash.common.compat.isLightNavigationBarCompat
 import com.github.kr328.clash.common.compat.isLightStatusBarsCompat
@@ -143,8 +145,22 @@ abstract class BaseActivity<D : Design<*>> : AppCompatActivity(),
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        this.onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    protected fun registerBackHandler(enabled: Boolean = true, handler: () -> Boolean) {
+        val callback = object : OnBackPressedCallback(enabled) {
+            override fun handleOnBackPressed() {
+                val consumed = try { handler() } catch (_: Exception) { false }
+                if (!consumed) {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, callback)
     }
 
     override fun onProfileChanged() {
@@ -199,8 +215,9 @@ abstract class BaseActivity<D : Design<*>> : AppCompatActivity(),
         window.isAllowForceDarkCompat = false
         window.isSystemBarsTranslucentCompat = true
         
-        window.statusBarColor = resolveThemedColor(android.R.attr.statusBarColor)
-        window.navigationBarColor = resolveThemedColor(android.R.attr.navigationBarColor)
+        // 使用 Material colorSurface 作为系统栏底色，避免引用已废弃的 android.R.attr.statusBarColor / navigationBarColor 常量
+        val systemBarColor = resolveThemedColor(com.google.android.material.R.attr.colorSurface)
+        setSystemBarsColors(systemBarColor, systemBarColor)
 
         if (Build.VERSION.SDK_INT >= 23) {
             window.isLightStatusBarsCompat = resolveThemedBoolean(android.R.attr.windowLightStatusBar)
@@ -211,6 +228,16 @@ abstract class BaseActivity<D : Design<*>> : AppCompatActivity(),
         }
 
         this.dayNight = dayNight
+    }
+
+    private fun setSystemBarsColors(status: Int, navigation: Int) {
+        // 尽量集中 deprecated 访问，降低散布警告；新 API 可迁移到 WindowInsetsController (已独立逻辑)
+        @Suppress("DEPRECATION")
+        fun Window.setBars(statusColor: Int, navColor: Int) {
+            statusBarColor = statusColor
+            navigationBarColor = navColor
+        }
+        window.setBars(status, navigation)
     }
 
     enum class Event {

@@ -4,8 +4,11 @@ import android.content.Context
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.core.model.LogMessage
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.AdapterLogMessageBinding
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
+import com.github.kr328.clash.design.util.roundedSelectableItemBackground
 
 class LogMessageAdapter(
     private val context: Context,
@@ -15,11 +18,19 @@ class LogMessageAdapter(
     class Holder(val binding: AdapterLogMessageBinding) : RecyclerView.ViewHolder(binding.root)
 
     var messages: List<LogMessage> = emptyList()
+    private val logItemRadius by lazy {
+        context.getPixels(R.dimen.large_action_card_radius).toFloat()
+    }
+
+    private fun newLogItemBackground() = context
+        .roundedSelectableItemBackground(logItemRadius)
+        .let { drawable -> drawable.constantState?.newDrawable()?.mutate() ?: drawable.mutate() }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return Holder(
             AdapterLogMessageBinding
                 .inflate(context.layoutInflater, parent, false)
+                .also { binding -> binding.root.background = newLogItemBackground() }
         )
     }
 

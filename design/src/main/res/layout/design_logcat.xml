@@ -57,6 +57,7 @@
                         android:visibility="@{streaming ? View.GONE : View.VISIBLE}">
 
                         <ImageView
+                            android:id="@+id/delete_view"
                             android:layout_width="@dimen/item_tailing_component_size"
                             android:layout_height="@dimen/item_tailing_component_size"
                             android:layout_marginStart="@dimen/item_tailing_margin"
@@ -69,6 +70,7 @@
                             android:src="@drawable/ic_baseline_delete" />
 
                         <ImageView
+                            android:id="@+id/export_view"
                             android:layout_width="@dimen/item_tailing_component_size"
                             android:layout_height="@dimen/item_tailing_component_size"
                             android:layout_marginStart="@dimen/item_tailing_margin"
@@ -82,6 +84,7 @@
                     </LinearLayout>
 
                     <ImageView
+                        android:id="@+id/close_view"
                         android:layout_width="@dimen/item_tailing_component_size"
                         android:layout_height="@dimen/item_tailing_component_size"
                         android:layout_gravity="end"

@@ -1,14 +1,18 @@
 package com.github.kr328.clash.design
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.core.util.trafficTotal
 import com.github.kr328.clash.design.databinding.DesignAboutBinding
 import com.github.kr328.clash.design.databinding.DesignMainBinding
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveThemedColor
+import com.github.kr328.clash.design.util.roundedSurfaceBackground
 import com.github.kr328.clash.design.util.root
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -70,10 +74,16 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             val binding = DesignAboutBinding.inflate(context.layoutInflater).apply {
                 this.versionName = versionName
+                root.background = context.roundedSurfaceBackground(
+                    context.getPixels(R.dimen.large_action_card_radius).toFloat()
+                )
             }
 
             AlertDialog.Builder(context)
-                .setView(binding.root)
+                .create().apply {
+                    setView(binding.root)
+                    window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                }
                 .show()
         }
     }
@@ -81,7 +91,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     init {
         binding.self = this
 
-        binding.colorClashStarted = context.resolveThemedColor(com.google.android.material.R.attr.colorPrimary)
+    binding.colorClashStarted = context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary)
         binding.colorClashStopped = context.resolveThemedColor(R.attr.colorClashStopped)
     }
 

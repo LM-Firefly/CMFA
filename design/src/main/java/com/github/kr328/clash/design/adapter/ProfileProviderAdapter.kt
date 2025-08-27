@@ -3,8 +3,11 @@ package com.github.kr328.clash.design.adapter
 import android.content.Context
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.AdapterProfileProviderBinding
 import com.github.kr328.clash.design.model.ProfileProvider
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 class ProfileProviderAdapter(
@@ -15,6 +18,8 @@ class ProfileProviderAdapter(
     class Holder(val binding: AdapterProfileProviderBinding) : RecyclerView.ViewHolder(binding.root)
 
     var providers: List<ProfileProvider> = emptyList()
+
+    private val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return Holder(
@@ -31,6 +36,7 @@ class ProfileProviderAdapter(
         val binding = holder.binding
 
         binding.provider = current
+        binding.root.applyRoundedSelectableBackground(radius)
 
         binding.root.apply {
             setOnClickListener {
