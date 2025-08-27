@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础应用名称（若有多 flavor 可被覆盖） -->
+    <string name="app_name">CMFA</string>
+
+    <!-- 升级时 aapt 警告的缺失默认值占位（请根据真实业务再做语义化修改） -->
+    <string name="disable_sniffer">Disable Sniffer</string>
+    <string name="port_whitelist">Port Whitelist</string>
+    <string name="script_mode">Script Mode</string>
+    <string name="sideload_geoip">Sideload GeoIP</string>
+    <string name="sideload_geoip_summary">Use external GeoIP database</string>
+    <string name="sniff">Sniff</string>
+    <string name="sniffer_config">Sniffer Config</string>
+    <string name="sniffer_override">Sniffer Override</string>
+    <string name="sniffing">Sniffing</string>
+
+    <!-- 可选: 版本信息 / 发布名（已在 buildConfig 中定义 resValue 时可不使用） -->
+    <string name="version_label">Version</string>
+</resources>

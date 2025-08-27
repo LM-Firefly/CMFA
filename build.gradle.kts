@@ -5,6 +5,14 @@ import com.android.build.gradle.BaseExtension
 import java.net.URL
 import java.util.*
 
+// 全局版本号变量，便于同步
+val appVersionName = "2.11.17"
+
+plugins {
+    // 依赖更新检查插件（使用 plugins DSL 以自动解析 Gradle Plugin Portal 仓库）
+    id("com.github.ben-manes.versions") version "0.51.0" apply false
+}
+
 buildscript {
     repositories {
         mavenCentral()
@@ -31,11 +39,21 @@ subprojects {
 
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
 
+
+    // 仅在根项目上应用 versions 插件生成 dependencyUpdates 任务
+    apply(plugin = "com.github.ben-manes.versions")
+    if (isApp) {
+        // Gradle 9.0+ 兼容写法，设置 archivesName，自动跟随 appVersionName
+        extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
+            archivesName.set("cmfa-$appVersionName")
+        }
+    }
+
     extensions.configure<BaseExtension> {
         buildFeatures.buildConfig = true
         defaultConfig {
             if (isApp) {
-                applicationId = "com.github.metacubex.clash"
+                applicationId = "com.github.metacubex.mihomo"
             }
 
             project.name.let { name ->
@@ -43,8 +61,9 @@ subprojects {
                 else "com.github.kr328.clash.$name"
             }
 
-            minSdk = 21
-            targetSdk = 35
+            minSdk = 23
+            // 同步升级 targetSdk
+            targetSdk = 36
 
             versionName = "2.11.17"
             versionCode = 211017
@@ -69,9 +88,10 @@ subprojects {
             }
         }
 
-        ndkVersion = "27.2.12479018"
+        ndkVersion = "28.0.13004108"
 
-        compileSdkVersion(defaultConfig.targetSdk!!)
+        // 与 targetSdk 脱钩后显式指定 compileSdk，便于后续分阶段升级
+        compileSdkVersion(36)
 
         if (isApp) {
             packagingOptions {
@@ -94,9 +114,6 @@ subprojects {
                 resValue("string", "launch_name", "@string/launch_name_alpha")
                 resValue("string", "application_name", "@string/application_name_alpha")
 
-                if (isApp) {
-                    applicationIdSuffix = ".alpha"
-                }
             }
 
             create("meta") {
@@ -108,10 +125,6 @@ subprojects {
 
                 resValue("string", "launch_name", "@string/launch_name_meta")
                 resValue("string", "application_name", "@string/application_name_meta")
-
-                if (isApp) {
-                    applicationIdSuffix = ".meta"
-                }
             }
         }
 

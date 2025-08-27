@@ -129,9 +129,10 @@ class ProfileManager(private val context: Context) : IProfileManager,
 
     override suspend fun update(uuid: UUID) {
         scheduleUpdate(uuid, true)
-        ImportedDao().queryByUUID(uuid)?.let {
-            if (it.type == Profile.Type.Url && it.source.startsWith("https://",true)) {
-                updateFlow(it)
+        ImportedDao().queryByUUID(uuid)?.let { imported ->
+            // Only trigger flow update for remote URL profiles with HTTPS scheme
+            if (imported.type == Profile.Type.Url && imported.source.startsWith("https://", ignoreCase = true)) {
+                updateFlow(imported)
             }
         }
     }

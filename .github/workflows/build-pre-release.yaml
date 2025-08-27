@@ -7,25 +7,26 @@ on:
 
 jobs:
   BuildPreRelease:
+    #    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v5
+
       - name: Checkout submodules
         run: git submodule update --init --recursive --force
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.25"
 
@@ -54,7 +55,7 @@ jobs:
           echo keystore.password="$SIGNING_STORE_PASSWORD" > signing.properties
           echo key.alias="$SIGNING_KEY_ALIAS" >> signing.properties
           echo key.password="$SIGNING_KEY_PASSWORD" >> signing.properties
-            
+
           echo "cat signing.properties"
           cat signing.properties
 
@@ -63,11 +64,12 @@ jobs:
         run: ./gradlew --no-daemon app:assembleAlphaRelease
 
       # Delete old Prerelease-alpha
-      - uses: dev-drprasad/delete-tag-and-release@v1.1
-        with:
-          tag_name: Prerelease-alpha
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          delete_release: true
+      - name: Delete old Prerelease-alpha
+        run: |
+          gh release delete Prerelease-alpha -y || true
+          gh tag delete Prerelease-alpha -y || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag Repo
         uses: richardsimko/update-tag@v1
@@ -86,4 +88,4 @@ jobs:
           generate_release_notes: true
 
       - name: Release Changelog Builder
-        uses: mikepenz/release-changelog-builder-action@v4
+        uses: mikepenz/release-changelog-builder-action@v5
