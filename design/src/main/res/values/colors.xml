@@ -10,4 +10,12 @@
     <color name="color_light_control_disabled">#FFD3D3D3</color>
     <color name="color_dark_control_disabled">#FF808080</color>
     <color name="color_error">#FFB00020</color>
+    <color name="colorPrimary">#3E2723</color>
+    <color name="colorPrimaryDark">#1B0000</color>
+    <color name="colorAccent">#D7CCC8</color>
+    <color name="colorSelectedBackground">#D7CCC8</color>
+    <color name="colorSelectedControl">#3E2723</color>
+    <color name="colorUnselectedBackground">#EFEBE9</color>
+    <color name="colorUnselectedControl">#3E2723</color>
+    <color name="colorProxyIndicator">#F44336</color>
 </resources>

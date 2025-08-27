@@ -4,9 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
+import android.util.AttributeSet
 import android.view.View
 import com.github.kr328.clash.common.compat.getDrawableCompat
-import com.github.kr328.clash.design.store.UiStore
+import com.github.kr328.clash.design.R
+import com.github.kr328.clash.common.compat.getColorCompat
 
 class ProxyView(
     context: Context,
@@ -19,6 +22,12 @@ class ProxyView(
 
     var state: ProxyViewState? = null
     constructor(context: Context) : this(context, ProxyViewConfig(context, 2))
+    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : this(
+        context,
+        ProxyViewConfig(context, 2)
+    )
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val state = state ?: return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
@@ -190,6 +199,20 @@ class ProxyView(
                     (height - state.config.layoutPadding * 2) / 3f * 2 - textOffset
 
             drawText(state.subtitle, 0, subtitleCount, x, y, paint)
+        }
+        
+        // 绘制取消固定的代理节点角标
+        if (state.isUnfixedProxy) {
+            paint.reset()
+            paint.isAntiAlias = true
+            paint.color = context.getColorCompat(R.color.colorProxyIndicator)
+            paint.style = Paint.Style.FILL
+            
+            val indicatorRadius = context.resources.getDimension(R.dimen.proxy_indicator_size) / 2
+            val indicatorX = width - state.config.layoutPadding - indicatorRadius
+            val indicatorY = state.config.layoutPadding + indicatorRadius
+            
+            canvas.drawCircle(indicatorX, indicatorY, indicatorRadius, paint)
         }
     }
 }
