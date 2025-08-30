@@ -25,8 +25,8 @@ import kotlinx.coroutines.withContext
 class ProxyDesign(
     context: Context,
     overrideMode: TunnelState.Mode?,
-    groupNames: List<String>,
-    uiStore: UiStore,
+    private val groupNames: List<String>,
+    private val uiStore: UiStore,
 ) : Design<ProxyDesign.Request>(context) {
     sealed class Request {
         object ReloadAll : Request()
@@ -49,13 +49,13 @@ class ProxyDesign(
         }
     }
 
-    private val adapter: ProxyPageAdapter
+    internal val adapter: ProxyPageAdapter
         get() = binding.pagesView.adapter!! as ProxyPageAdapter
 
-    private var horizontalScrolling = false
-    private val verticalBottomScrolled: Boolean
+    internal var horizontalScrolling = false
+    internal val verticalBottomScrolled: Boolean
         get() = adapter.states[binding.pagesView.currentItem].bottom
-    private var urlTesting: Boolean
+    internal var urlTesting: Boolean
         get() = adapter.states[binding.pagesView.currentItem].urlTesting
         set(value) {
             adapter.states[binding.pagesView.currentItem].urlTesting = value
@@ -149,6 +149,9 @@ class ProxyDesign(
                     binding.pagesView.setCurrentItem(initialPosition, false)
             }
         }
+        binding.groupDropdownView.setOnClickListener {
+            showGroupSelectDialog()
+        }
     }
 
     fun requestUrlTesting() {
@@ -173,5 +176,15 @@ class ProxyDesign(
             binding.urlTestView.visibility = View.VISIBLE
             binding.urlTestProgressView.visibility = View.GONE
         }
+    }
+
+    private fun showGroupSelectDialog() {
+        val dialog = GroupSelectDialog(context, groupNames, uiStore.proxyLastGroup) { selectedGroup ->
+            val index = groupNames.indexOf(selectedGroup)
+            if (index >= 0) {
+                binding.pagesView.setCurrentItem(index, false)
+            }
+        }
+        dialog.show()
     }
 }

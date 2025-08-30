@@ -7,4 +7,10 @@
         <item name="colorControlNormal">@color/color_error</item>
         <item name="android:textColor">@color/color_error</item>
     </style>
+
+    <style name="Theme_Design_BottomSheetDialog_Custom" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="bottomSheetStyle">@style/AppBottomSheetStyle</item>
+    </style>
 </resources>
