@@ -65,7 +65,7 @@ require (
 	github.com/metacubex/sing-wireguard v0.0.0-20250503063753-2dc62acc626f // indirect
 	github.com/metacubex/smux v0.0.0-20250503055512-501391591dee // indirect
 	github.com/metacubex/tfo-go v0.0.0-20250827083229-aa432b865617 // indirect
-	github.com/metacubex/utls v1.8.1-0.20250823120917-12f5ba126142 // indirect
+	github.com/metacubex/utls v1.8.1-0.20250916021850-3fcad0728a32 // indirect
 	github.com/metacubex/wireguard-go v0.0.0-20250820062549-a6cecdd7f57f // indirect
 	github.com/miekg/dns v1.1.63 // indirect
 	github.com/mroth/weightedrand/v2 v2.1.0 // indirect
