@@ -2,7 +2,7 @@
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BaseExtension
-import java.net.URL
+import java.net.URI
 import java.util.*
 
 buildscript {
@@ -62,16 +62,12 @@ subprojects {
                 }
             }
 
-            if (!isApp) {
-                consumerProguardFiles("consumer-rules.pro")
-            } else {
-                setProperty("archivesBaseName", "cmfa-$versionName")
-            }
+            // Removed global consumerProguardFiles call
         }
 
         ndkVersion = "28.0.13004108"
 
-        compileSdkVersion(defaultConfig.targetSdk!!)
+        compileSdkVersion(35)
 
         if (isApp) {
             packagingOptions {
@@ -157,6 +153,7 @@ subprojects {
         if (isApp) {
             this as AppExtension
 
+
             splits {
                 abi {
                     isEnable = true
@@ -171,18 +168,21 @@ subprojects {
             sourceCompatibility = JavaVersion.VERSION_21
             targetCompatibility = JavaVersion.VERSION_21
         }
+
+        if (!isApp) {
+        }
     }
 }
 
-task("clean", type = Delete::class) {
-    delete(rootProject.buildDir)
+tasks.register("clean", Delete::class) {
+    delete(rootProject.layout.buildDirectory)
 }
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
 
     doLast {
-        val sha256 = URL("$distributionUrl.sha256").openStream()
+        val sha256 = URI("$distributionUrl.sha256").toURL().openStream()
             .use { it.reader().readText().trim() }
 
         file("gradle/wrapper/gradle-wrapper.properties")

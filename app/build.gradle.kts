@@ -1,4 +1,4 @@
-import java.net.URL
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
@@ -6,6 +6,19 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     id("com.android.application")
+}
+
+android {
+    namespace = "com.github.kr328.clash"
+    compileSdk = 35
+    
+    defaultConfig {
+        applicationId = "com.github.metacubex.mihomo"
+        minSdk = 21
+        targetSdk = 35
+        versionCode = 211016
+        versionName = "2.11.16"
+    }
 }
 
 dependencies {
@@ -26,13 +39,14 @@ dependencies {
     implementation(libs.google.material)
 }
 
-tasks.getByName("clean", type = Delete::class) {
+tasks.named("clean", type = Delete::class) {
     delete(file("release"))
+    delete(file("src/main/assets"))
 }
 
 val geoFilesDownloadDir = "src/main/assets"
 
-task("downloadGeoFiles") {
+tasks.register("downloadGeoFiles") {
 
     val geoFilesUrls = mapOf(
         "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/geoip.metadb" to "geoip.metadb",
@@ -43,7 +57,7 @@ task("downloadGeoFiles") {
 
     doLast {
         geoFilesUrls.forEach { (downloadUrl, outputFileName) ->
-            val url = URL(downloadUrl)
+            val url = URI(downloadUrl).toURL()
             val outputPath = file("$geoFilesDownloadDir/$outputFileName")
             outputPath.parentFile.mkdirs()
             url.openStream().use { input ->
@@ -62,8 +76,4 @@ afterEvaluate {
             it.dependsOn(downloadGeoFilesTask)
         }
     }
-}
-
-tasks.getByName("clean", type = Delete::class) {
-    delete(file(geoFilesDownloadDir))
 }
