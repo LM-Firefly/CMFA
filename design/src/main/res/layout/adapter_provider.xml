@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
         <variable
             name="provider"
@@ -65,7 +64,7 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/end_view"
             android:background="?attr/colorControlHighlight"
-            android:minHeight="48dp" />
+            android:minHeight="@{@dimen/item_tailing_component_size * 1.5f}" />
 
         <FrameLayout
             android:id="@+id/end_view"
@@ -73,8 +72,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            app:clickableCompat="@{!state.updating}"
-            app:focusableCompat="@{!state.updating}"
+            android:clickable="@{!state.updating}"
+            android:focusable="@{!state.updating}"
             android:nextFocusLeft="@id/root_view"
             android:onClick="@{update}">
 
@@ -86,14 +85,14 @@
                 android:layout_margin="@dimen/item_tailing_margin"
                 android:contentDescription="@string/more"
                 android:src="@drawable/ic_baseline_swap_vert"
-                app:visibilityCompat="@{state.updating ? View.GONE : View.VISIBLE}" />
+                android:visibility="@{state.updating ? View.GONE : View.VISIBLE}" />
 
             <ProgressBar
                 android:layout_width="@dimen/item_tailing_component_size"
                 android:layout_height="@dimen/item_tailing_component_size"
                 android:layout_gravity="center"
                 android:layout_margin="@dimen/item_tailing_margin"
-                app:visibilityCompat="@{state.updating ? View.VISIBLE : View.GONE}" />
+                android:visibility="@{state.updating ? View.VISIBLE : View.GONE}" />
         </FrameLayout>
     </RelativeLayout>
 </layout>

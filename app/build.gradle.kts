@@ -108,11 +108,11 @@ val downloadGeoFiles = tasks.register("downloadGeoFiles") {
     }
 }
 
-// 将生成目录加入主 sourceSet 的 assets（使用 Provider.get() 避免 AGP 新版禁止传入 Provider）
+// 将生成目录加入主 sourceSet 的 assets
 plugins.withId("com.android.application") {
     extensions.configure<com.android.build.gradle.AppExtension>("android") {
         sourceSets.getByName("main") {
-            assets.srcDir(geoAssetsDirProvider.get())
+            assets.srcDir(geoAssetsDirProvider)
         }
     }
 }
