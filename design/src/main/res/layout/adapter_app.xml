@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="app"
@@ -24,7 +25,7 @@
             android:layout_height="@dimen/item_header_component_size"
             android:layout_centerVertical="true"
             android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:background="@{app.icon}"
+            app:backgroundDrawable="@{app.icon}"
             android:clickable="false"
             android:focusable="false" />
 
@@ -56,7 +57,7 @@
             android:layout_height="@dimen/item_tailing_component_size"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:checked="@{selected}"
+            app:checkedCompat="@{selected}"
             android:clickable="false"
             android:focusable="false"
             android:gravity="center_horizontal|end" />

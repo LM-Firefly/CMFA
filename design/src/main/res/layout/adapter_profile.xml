@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="profile"
@@ -38,7 +39,7 @@
             android:layout_height="@dimen/item_header_component_size"
             android:layout_centerVertical="true"
             android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:checked="@{profile.active}"
+            app:checkedCompat="@{profile.active}"
             android:clickable="false"
             android:focusable="false"
             android:gravity="center" />
@@ -68,13 +69,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                >
+            >
 
                 <TextView
                     android:textSize="12sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="@{profile.download &lt;2 ? View.GONE : View.VISIBLE}"
+                    app:visibilityCompat="@{profile.download &lt; 2 ? View.GONE : View.VISIBLE}"
                     android:text='@{profile.download >1  ?I18nKt.toBytesString(profile.download+profile.upload)+"/" :""}'
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
 
@@ -82,7 +83,7 @@
                     android:textSize="12sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="@{profile.download &lt;2 ? View.GONE : View.VISIBLE}"
+                    app:visibilityCompat="@{profile.download &lt; 2 ? View.GONE : View.VISIBLE}"
                     android:text='@{profile.total >1 ?I18nKt.toBytesString(profile.total) : ""}'
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
             </LinearLayout>
@@ -90,7 +91,7 @@
                 android:textSize="12sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="@{profile.expire==0 ? View.GONE : View.VISIBLE}"
+                app:visibilityCompat="@{profile.expire==0 ? View.GONE : View.VISIBLE}"
                 android:text='@{profile.expire>0 ? I18nKt.toDateStr(profile.expire):""}'
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
             <ProgressBar
@@ -98,9 +99,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="1000"
-                android:visibility="@{profile.total &lt; 2 ? View.GONE : View.VISIBLE}"
-                android:progress="@{profile.total>1 ?I18nKt.toProgress ((profile.download+profile.upload)/(profile.total/1000)) :0}"
-                />
+                app:visibilityCompat="@{profile.total &lt; 2 ? View.GONE : View.VISIBLE}"
+                app:progressCompat="@{profile.total>1 ?I18nKt.toProgress ((profile.download+profile.upload)/(profile.total/1000)) :0}"
+            />
         </LinearLayout>
 
         <TextView

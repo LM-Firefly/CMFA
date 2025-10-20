@@ -1,20 +1,20 @@
 [versions]
-agp = "8.13.0"          # 保持最新稳定（下一主版本 9.x 为 alpha）
-kotlin = "2.3.0-Beta1"  # 升级到 2.3.0-Beta1
-ksp = "2.2.21-RC-2.0.4" # 升级到 2.2.21-RC-2.0.4
+agp = "9.0.0-alpha11"       # 保持最新稳定（下一主版本 9.x 为 alpha）
+kotlin = "2.3.0-Beta1"      # 升级到 2.3.0-Beta1
+ksp = "2.2.21-RC-2.0.4"     # 升级到 2.2.21-RC-2.0.4
 golang = "1.0.4"
-coroutine = "1.10.2"    # 补丁更新
-coreKtx = "1.17.0"      # 跨多版本升级
-activity = "1.11.0"     # 升级到最新稳定
-fragment = "1.8.9"      # 补丁更新
-appcompat = "1.7.1"     # 补丁更新
-coordinator = "1.3.0"   # 次版本更新
-recyclerview = "1.4.0"  # 次版本更新
+coroutine = "1.10.2"        # 补丁更新
+coreKtx = "1.17.0"          # 跨多版本升级
+activity = "1.12.0-alpha09" # 升级到最新稳定
+fragment = "1.8.9"          # 补丁更新
+appcompat = "1.7.1"         # 补丁更新
+coordinator = "1.3.0"       # 次版本更新
+recyclerview = "1.4.0"      # 次版本更新
 viewpager = "1.1.0"
-material = "1.13.0"     # 升级到最新稳定
-serialization = "1.9.0" # 跨版本（API 基本向后兼容）
+material = "1.14.0-alpha05" # 升级到最新稳定
+serialization = "1.9.0"     # 跨版本（API 基本向后兼容）
 kaidl = "1.15"
-room = "2.8.2"          # 补丁更新
+room = "2.8.2"              # 补丁更新
 multiprocess = "1.0.0"
 
 [libraries]

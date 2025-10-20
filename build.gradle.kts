@@ -7,6 +7,7 @@ import java.net.URI
 import java.util.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 
 // 全局版本号变量，便于同步
 val appVersionName = "2.11.17"
@@ -44,143 +45,137 @@ subprojects {
 
     val isApp = name == "app"
 
+        // 统一签名配置，仅在 app 模块声明 release 签名
+        if (isApp) {
+            extensions.findByType(BaseExtension::class.java)?.apply {
+                signingConfigs.create("release").apply {
+                    val propsFile = rootProject.file("signing.properties")
+                    if (propsFile.exists()) {
+                        val props = java.util.Properties().apply { load(propsFile.inputStream()) }
+                        storeFile = rootProject.file("release.keystore")
+                        storePassword = props["keystore.password"] as String? ?: ""
+                        keyAlias = props["key.alias"] as String? ?: ""
+                        keyPassword = props["key.password"] as String? ?: ""
+                    }
+                }
+            }
+        }
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
 
-
+    // Gradle 9.0+ 兼容写法，设置 archivesName，自动跟随 appVersionName
     if (isApp) {
-        // Gradle 9.0+ 兼容写法，设置 archivesName，自动跟随 appVersionName
         extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
             archivesName.set("cmfa-$appVersionName")
         }
     }
 
-    extensions.configure<BaseExtension> {
-        buildFeatures.buildConfig = true
-        defaultConfig {
-            if (isApp) {
-                applicationId = "com.github.metacubex.mihomo"
-            }
+    // 为 Kotlin 编译器声明工具链（将按需下载并使用对应版本的 JDK）
+    extensions.findByType(KotlinProjectExtension::class.java)?.jvmToolchain(24)
 
-            project.name.let { name ->
-                namespace = if (name == "app") "com.github.kr328.clash"
-                else "com.github.kr328.clash.$name"
-            }
+    // Kotlin 编译目标
+    tasks.withType<KotlinCompile>().configureEach {
+        @Suppress("UnstableApiUsage")
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_24)
+    }
 
-            minSdk = 23
-            // 同步升级 targetSdk
-            targetSdk = 36
+    // 使用旧 DSL 进行统一配置，便于与 Kotlin 插件兼容
+    extensions.findByType(BaseExtension::class.java)?.let { android ->
+        val moduleName = project.name
 
-            versionName = "2.11.18"
-            versionCode = 211018
-
-            resValue("string", "release_name", "v$versionName")
-            resValue("integer", "release_code", "$versionCode")
-
-            ndk {
-                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-            }
-
-            externalNativeBuild {
-                cmake {
-                    abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-                }
-            }
-
-            if (!isApp) {
-                consumerProguardFiles("consumer-rules.pro")
-            }
-        }
-
-        ndkVersion = "29.0.14206865"
-
-        // 与 targetSdk 脱钩后显式指定 compileSdk，便于后续分阶段升级
-        compileSdkVersion(36)
-
-        if (isApp) {
-            packagingOptions {
-                resources {
-                    excludes.add("DebugProbesKt.bin")
-                }
-            }
-        }
-
-        productFlavors {
-            flavorDimensions("feature")
-
-            create("alpha") {
-                isDefault = true
-                dimension = flavorDimensionList[0]
-                versionNameSuffix = ".Alpha"
-
-                buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
-
-                resValue("string", "launch_name", "@string/launch_name_alpha")
-                resValue("string", "application_name", "@string/application_name_alpha")
-
-            }
-
-            create("meta") {
-
-                dimension = flavorDimensionList[0]
-                versionNameSuffix = ".Meta"
-
-                buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
-
-                resValue("string", "launch_name", "@string/launch_name_meta")
-                resValue("string", "application_name", "@string/application_name_meta")
-            }
-        }
-
-        sourceSets {
-            getByName("meta") {
-                java.srcDirs("src/foss/java")
-            }
-            getByName("alpha") {
-                java.srcDirs("src/foss/java")
-            }
-        }
-
-        signingConfigs {
-            val keystore = rootProject.file("signing.properties")
-            if (keystore.exists()) {
-                create("release") {
-                    val prop = Properties().apply {
-                        keystore.inputStream().use(this::load)
-                    }
-
-                    storeFile = rootProject.file("release.keystore")
-                    storePassword = prop.getProperty("keystore.password")!!
-                    keyAlias = prop.getProperty("key.alias")!!
-                    keyPassword = prop.getProperty("key.password")!!
-                }
-            }
-        }
-
-        buildTypes {
-            named("release") {
-                isMinifyEnabled = isApp
-                isShrinkResources = isApp
-                signingConfig = signingConfigs.findByName("release") ?: signingConfigs["debug"]
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-            }
-            named("debug") {
-                versionNameSuffix = ".debug"
-            }
-        }
-
-        buildFeatures.apply {
+        android.apply {
+            namespace = if (moduleName == "app") "com.github.kr328.clash" else "com.github.kr328.clash.$moduleName"
+            buildFeatures.buildConfig = true
+            buildFeatures.resValues = true
+            // 开启 Data Binding，使布局中的 @{} 表达式生效（旧 DSL）
             dataBinding {
-                isEnabled = name != "hideapi"
+                isEnabled = true
+            }
+
+            defaultConfig {
+                if (moduleName == "app") {
+                    applicationId = "com.github.metacubex.mihomo"
+                    versionName = "2.11.18"
+                    versionCode = 211018
+                    resValue("string", "release_name", "v$versionName")
+                    resValue("integer", "release_code", "$versionCode")
+                } else {
+                    consumerProguardFiles("consumer-rules.pro")
+                }
+
+                minSdk = 23
+                targetSdk = 36
+
+                ndk {
+                    abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                }
+
+                externalNativeBuild {
+                    cmake {
+                        abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                    }
+                }
+            }
+
+            ndkVersion = "29.0.14206865"
+            compileSdkVersion(36)
+
+            if (moduleName == "app") {
+                packagingOptions {
+                    resources {
+                        excludes.add("DebugProbesKt.bin")
+                    }
+                }
+            }
+
+            productFlavors {
+                flavorDimensions("feature")
+
+                create("alpha") {
+                    if (moduleName == "app") versionNameSuffix = ".Alpha"
+                    dimension = flavorDimensionList[0]
+                    buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
+                    resValue("string", "launch_name", "@string/launch_name_alpha")
+                    resValue("string", "application_name", "@string/application_name_alpha")
+                }
+
+                create("meta") {
+                    if (moduleName == "app") versionNameSuffix = ".Meta"
+                    dimension = flavorDimensionList[0]
+                    buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
+                    resValue("string", "launch_name", "@string/launch_name_meta")
+                    resValue("string", "application_name", "@string/application_name_meta")
+                }
+            }
+
+            sourceSets {
+                getByName("meta") { java.srcDirs("src/foss/java") }
+                getByName("alpha") { java.srcDirs("src/foss/java") }
+            }
+
+            buildTypes {
+                named("release") {
+                    isMinifyEnabled = (moduleName == "app")
+                    isShrinkResources = (moduleName == "app")
+                    signingConfig = signingConfigs.findByName("release") ?: signingConfigs["debug"]
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                }
+                named("debug") {
+                    versionNameSuffix = ".debug"
+                }
+            }
+
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_24
+                targetCompatibility = JavaVersion.VERSION_24
             }
         }
 
+        // 仅应用模块配置 ABI splits
         if (isApp) {
-            this as AppExtension
-
-            splits {
+            (android as AppExtension).splits {
                 abi {
                     isEnable = true
                     isUniversalApk = true
@@ -189,16 +184,6 @@ subprojects {
                 }
             }
         }
-
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_24
-            targetCompatibility = JavaVersion.VERSION_24
-        }
-    }
-
-    tasks.withType<KotlinCompile>().configureEach {
-        @Suppress("UnstableApiUsage")
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_24)
     }
 }
 
@@ -250,9 +235,9 @@ tasks.withType<DependencyUpdatesTask>().configureEach {
     checkForGradleUpdate = true
     gradleReleaseChannel = "current"
     // 仅在当前为稳定版时拒绝不稳定更新（避免 Alpha/Beta/RC 噪音）
-    rejectVersionIf {
-        isNonStable(candidate.version) && !isNonStable(currentVersion)
-    }
+//    rejectVersionIf {
+//        isNonStable(candidate.version) && !isNonStable(currentVersion)
+//    }
     outputFormatter = "json"
     outputDir = "build/dependencyUpdates"
     reportfileName = "report"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="appInfo"
@@ -27,7 +28,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:background="@{appInfo.icon}" />
+            app:backgroundDrawable="@{appInfo.icon}" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -51,7 +52,7 @@
                 android:layout_marginTop="@dimen/item_text_margin"
                 android:text="@{appInfo.packageName}"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                android:visibility="@{appInfo.packageName.length() == 0 ? View.GONE : View.VISIBLE}" />
+                app:visibilityCompat="@{appInfo.packageName.length() == 0 ? View.GONE : View.VISIBLE}" />
         </LinearLayout>
 
         <com.google.android.material.radiobutton.MaterialRadioButton
@@ -61,7 +62,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginHorizontal="@dimen/item_tailing_margin"
-            android:checked="@{selected}"
+            app:checkedCompat="@{selected}"
             android:clickable="false"
             android:focusable="false"
             android:gravity="center" />
