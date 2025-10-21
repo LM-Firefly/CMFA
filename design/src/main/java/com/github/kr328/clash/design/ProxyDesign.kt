@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
 import android.view.View
@@ -15,6 +16,8 @@ import com.github.kr328.clash.design.databinding.DesignProxyBinding
 import com.github.kr328.clash.design.model.ProxyState
 import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.design.util.applyFrom
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.root
@@ -25,8 +28,8 @@ import kotlinx.coroutines.withContext
 class ProxyDesign(
     context: Context,
     overrideMode: TunnelState.Mode?,
-    groupNames: List<String>,
-    uiStore: UiStore,
+    private val groupNames: List<String>,
+    private val uiStore: UiStore,
 ) : Design<ProxyDesign.Request>(context) {
     sealed class Request {
         object ReloadAll : Request()
@@ -49,13 +52,13 @@ class ProxyDesign(
         }
     }
 
-    private val adapter: ProxyPageAdapter
+    internal val adapter: ProxyPageAdapter
         get() = binding.pagesView.adapter!! as ProxyPageAdapter
 
-    private var horizontalScrolling = false
-    private val verticalBottomScrolled: Boolean
+    internal var horizontalScrolling = false
+    internal val verticalBottomScrolled: Boolean
         get() = adapter.states[binding.pagesView.currentItem].bottom
-    private var urlTesting: Boolean
+    internal var urlTesting: Boolean
         get() = adapter.states[binding.pagesView.currentItem].urlTesting
         set(value) {
             adapter.states[binding.pagesView.currentItem].urlTesting = value
@@ -93,6 +96,9 @@ class ProxyDesign(
         binding.self = this
 
         binding.activityBarLayout.applyFrom(context)
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.menuView.applyRoundedSelectableBackground(radius)
+        binding.groupDropdownView.applyRoundedSelectableBackground(radius)
 
         binding.menuView.setOnClickListener {
             menu.show()
@@ -149,6 +155,10 @@ class ProxyDesign(
                     binding.pagesView.setCurrentItem(initialPosition, false)
             }
         }
+        binding.groupDropdownView.setOnClickListener {
+            showGroupSelectDialog()
+        }
+        binding.urlTestView.applyRoundedSelectableBackground(radius)
     }
 
     fun requestUrlTesting() {
@@ -173,5 +183,16 @@ class ProxyDesign(
             binding.urlTestView.visibility = View.VISIBLE
             binding.urlTestProgressView.visibility = View.GONE
         }
+    }
+    private fun showGroupSelectDialog() {
+        // 获取Activity实例，用于保存和恢复状态栏配置
+        val activity = if (context is Activity) context else null
+        val dialog = GroupSelectDialog(context, groupNames, uiStore.proxyLastGroup, activity) { selectedGroup ->
+            val index = groupNames.indexOf(selectedGroup)
+            if (index >= 0) {
+                binding.pagesView.setCurrentItem(index, false)
+            }
+        }
+        dialog.show()
     }
 }
