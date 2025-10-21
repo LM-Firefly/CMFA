@@ -2,8 +2,25 @@
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BaseExtension
-import java.net.URL
+import java.net.URI
+import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import java.util.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+// 全局版本号变量，便于同步
+val appVersionName = "2.11.18"
+plugins {
+    // 通过 Version Catalog 声明核心插件版本，避免旧式 buildscript classpath 写法
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.versions)
+}
 
 buildscript {
     repositories {
@@ -12,10 +29,7 @@ buildscript {
         maven("https://raw.githubusercontent.com/MetaCubeX/maven-backup/main/releases")
     }
     dependencies {
-        classpath(libs.build.android)
-        classpath(libs.build.kotlin.common)
-        classpath(libs.build.kotlin.serialization)
-        classpath(libs.build.ksp)
+        // 自定义 Go 插件尚未提供插件标记，仍通过 classpath 引入
         classpath(libs.build.golang)
     }
 }
@@ -31,11 +45,17 @@ subprojects {
 
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
 
+    if (isApp) {
+        // Gradle 9.0+ 兼容写法，设置 archivesName，自动跟随 appVersionName
+        extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
+            archivesName.set("cmfa-$appVersionName")
+        }
+    }
     extensions.configure<BaseExtension> {
         buildFeatures.buildConfig = true
         defaultConfig {
             if (isApp) {
-                applicationId = "com.github.metacubex.clash"
+                applicationId = "com.github.metacubex.mihomo"
             }
 
             project.name.let { name ->
@@ -43,10 +63,11 @@ subprojects {
                 else "com.github.kr328.clash.$name"
             }
 
-            minSdk = 21
-            targetSdk = 35
+            minSdk = 23
+            // 同步升级 targetSdk
+            targetSdk = 36
 
-            versionName = "2.11.18"
+            versionName = appVersionName
             versionCode = 211018
 
             resValue("string", "release_name", "v$versionName")
@@ -64,14 +85,13 @@ subprojects {
 
             if (!isApp) {
                 consumerProguardFiles("consumer-rules.pro")
-            } else {
-                setProperty("archivesBaseName", "cmfa-$versionName")
             }
         }
 
-        ndkVersion = "27.2.12479018"
+        ndkVersion = "29.0.14206865"
 
-        compileSdkVersion(defaultConfig.targetSdk!!)
+        // 与 targetSdk 脱钩后显式指定 compileSdk，便于后续分阶段升级
+        compileSdkVersion(36)
 
         if (isApp) {
             packagingOptions {
@@ -94,9 +114,6 @@ subprojects {
                 resValue("string", "launch_name", "@string/launch_name_alpha")
                 resValue("string", "application_name", "@string/application_name_alpha")
 
-                if (isApp) {
-                    applicationIdSuffix = ".alpha"
-                }
             }
 
             create("meta") {
@@ -108,10 +125,6 @@ subprojects {
 
                 resValue("string", "launch_name", "@string/launch_name_meta")
                 resValue("string", "application_name", "@string/application_name_meta")
-
-                if (isApp) {
-                    applicationIdSuffix = ".meta"
-                }
             }
         }
 
@@ -175,24 +188,69 @@ subprojects {
         }
 
         compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
+            sourceCompatibility = JavaVersion.VERSION_24
+            targetCompatibility = JavaVersion.VERSION_24
         }
+    }
+    tasks.withType<KotlinCompile>().configureEach {
+        @Suppress("UnstableApiUsage")
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_24)
+    }
+    tasks.withType<JavaCompile>().configureEach {
+        options.compilerArgs.add("-Xlint:deprecation")
     }
 }
 
-task("clean", type = Delete::class) {
-    delete(rootProject.buildDir)
+tasks.register<Delete>("clean") {
+    delete(layout.buildDirectory)
+}
+tasks.register("printJdkInfo") {
+    group = "verification"
+    description = "Prints the current JVM version and java.home used by Gradle"
+    doLast {
+        val props = listOf(
+            "java.version",
+            "java.vendor",
+            "java.vm.name",
+            "java.vm.version",
+            "java.runtime.version",
+            "java.home",
+        )
+        println("===== JDK Runtime Info (Gradle JVM) =====")
+        props.forEach { k -> println("$k = ${System.getProperty(k)}") }
+        println("java.class.version = ${System.getProperty("java.class.version")}")
+    }
 }
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
 
     doLast {
-        val sha256 = URL("$distributionUrl.sha256").openStream()
+        val sha256 = URI.create("${distributionUrl}.sha256").toURL().openStream()
             .use { it.reader().readText().trim() }
 
         file("gradle/wrapper/gradle-wrapper.properties")
             .appendText("distributionSha256Sum=$sha256")
     }
+}
+// 仅在根项目配置 versions 插件的任务行为
+fun isNonStable(version: String): Boolean {
+    val v = version.lowercase(Locale.ROOT)
+    val stableKeywords = listOf("release", "final", "ga")
+    val hasStableKeyword = stableKeywords.any { v.contains(it) }
+    val regex = Regex("^[0-9,.v-]+(-r)?$")
+    val isStable = hasStableKeyword || regex.matches(version)
+    return !isStable
+}
+
+tasks.withType<DependencyUpdatesTask>().configureEach {
+    checkForGradleUpdate = true
+    gradleReleaseChannel = "current"
+    // 仅在当前为稳定版时拒绝不稳定更新（避免 Alpha/Beta/RC 噪音）
+//    rejectVersionIf {
+//        isNonStable(candidate.version) && !isNonStable(currentVersion)
+//    }
+    outputFormatter = "json"
+    outputDir = "build/dependencyUpdates"
+    reportfileName = "report"
 }

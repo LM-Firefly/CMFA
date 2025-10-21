@@ -5,9 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.core.model.Provider
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.AdapterProviderBinding
 import com.github.kr328.clash.design.model.ProviderState
 import com.github.kr328.clash.design.ui.ObservableCurrentTime
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 class ProviderAdapter(
@@ -18,6 +21,9 @@ class ProviderAdapter(
     class Holder(val binding: AdapterProviderBinding) : RecyclerView.ViewHolder(binding.root)
 
     private val currentTime = ObservableCurrentTime()
+    private val updateButtonRadius by lazy {
+        context.getPixels(R.dimen.large_action_card_radius).toFloat()
+    }
 
     val states = providers.map { ProviderState(it, it.updatedAt, false) }
 
@@ -62,6 +68,7 @@ class ProviderAdapter(
         } else {
             holder.binding.endView.visibility = View.VISIBLE
             holder.binding.elapsedView.visibility = View.VISIBLE
+            holder.binding.endView.applyRoundedSelectableBackground(updateButtonRadius)
             holder.binding.update = View.OnClickListener {
                 state.updating = true
                 requestUpdate(position, state.provider)

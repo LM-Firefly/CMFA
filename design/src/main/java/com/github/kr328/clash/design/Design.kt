@@ -17,7 +17,11 @@ abstract class Design<R>(val context: Context) :
     abstract val root: View
 
     val surface = Surface()
+    @Suppress("DEPRECATION")
     val requests: Channel<R> = Channel(Channel.UNLIMITED)
+    fun sendRequest(request: R) {
+        requests.trySend(request)
+    }
 
     suspend fun showToast(
         resId: Int,

@@ -242,7 +242,7 @@
     <string name="geox_mmdb">MMDB 链接</string>
     <string name="geox_geosite">Geosite 链接</string>
     <string name="prefer_h3">H3 优先</string>
-    <string name="geox_files" >Geo 文件</string>
+    <string name="geox_files">Geo 文件</string>
     <string name="import_geoip_file">导入 GeoIP 数据库</string>
     <string name="import_geosite_file">导入 GeoSite 数据库</string>
     <string name="import_country_file">导入 Country 数据库</string>
@@ -257,4 +257,5 @@
     <string name="external_control_activity">外部控制</string>
     <string name="external_control_started">Clash.Meta 服务已启动</string>
     <string name="external_control_stopped">Clash.Meta 服务已停止</string>
+    <string name="group_dropdown">全部策略组</string>
 </resources>

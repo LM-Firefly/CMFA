@@ -6,6 +6,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.github.kr328.clash.common.compat.getDrawableCompat
 import com.github.kr328.clash.design.databinding.PreferenceClickableBinding
+import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 interface ClickablePreference : Preference {
@@ -25,6 +28,9 @@ fun PreferenceScreen.clickable(
 ): ClickablePreference {
     val binding = PreferenceClickableBinding
         .inflate(context.layoutInflater, root, false)
+
+    val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+    binding.root.applyRoundedSelectableBackground(radius)
 
     val impl = object : ClickablePreference {
         override var icon: Drawable?
