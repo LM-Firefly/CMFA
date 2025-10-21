@@ -9,9 +9,10 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.ComponentLargeActionLabelBinding
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveClickableAttrs
-import com.github.kr328.clash.design.util.selectableItemBackground
+import com.github.kr328.clash.design.util.roundedSelectableItemBackground
 
 class LargeActionLabel @JvmOverloads constructor(
     context: Context,
@@ -54,7 +55,9 @@ class LargeActionLabel @JvmOverloads constructor(
         ) {
             isFocusable = focusable(true)
             isClickable = clickable(true)
-            background = background() ?: context.selectableItemBackground
+            val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+            val defaultBackground = context.roundedSelectableItemBackground(radius)
+            background = background() ?: defaultBackground
         }
 
         context.theme.obtainStyledAttributes(

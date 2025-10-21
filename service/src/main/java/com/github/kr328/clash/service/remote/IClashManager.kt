@@ -15,6 +15,14 @@ interface IClashManager {
 
     fun patchSelector(group: String, name: String): Boolean
 
+    /**
+     * 取消固定代理组中的节点
+     *
+     * @param group 代理组名称
+     * @return 操作是否成功
+     */
+    fun unfixedProxy(group: String): Boolean
+
     suspend fun healthCheck(group: String)
     suspend fun updateProvider(type: Provider.Type, name: String)
 

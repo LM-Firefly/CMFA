@@ -58,7 +58,7 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
                     }
                     network.onEvent { n ->
                         if (Build.VERSION.SDK_INT in 22..28) @TargetApi(22) {
-                            setUnderlyingNetworks(n?.let { arrayOf(it) })
+                            setUnderlyingNetworks(n.let { arrayOf(it) })
                         }
 
                         false
