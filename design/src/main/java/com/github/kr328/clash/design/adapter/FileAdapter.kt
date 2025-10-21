@@ -3,9 +3,12 @@ package com.github.kr328.clash.design.adapter
 import android.content.Context
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.AdapterFileBinding
 import com.github.kr328.clash.design.model.File
 import com.github.kr328.clash.design.ui.ObservableCurrentTime
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 class FileAdapter(
@@ -16,6 +19,7 @@ class FileAdapter(
     class Holder(val binding: AdapterFileBinding) : RecyclerView.ViewHolder(binding.root)
 
     private val currentTime = ObservableCurrentTime()
+    private val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
 
     var files: List<File> = emptyList()
 
@@ -35,6 +39,8 @@ class FileAdapter(
         val current = files[position]
 
         holder.binding.apply {
+            rootView.applyRoundedSelectableBackground(radius)
+            menuView.applyRoundedSelectableBackground(radius)
             file = current
 
             setOpen {

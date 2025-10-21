@@ -8,6 +8,8 @@ import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.ComponentActionTextFieldBinding
+import com.github.kr328.clash.design.util.applyRoundedSelectableBackground
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 
 class ActionTextField @JvmOverloads constructor(
@@ -83,5 +85,7 @@ class ActionTextField @JvmOverloads constructor(
                 recycle()
             }
         }
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.actionView.applyRoundedSelectableBackground(radius)
     }
 }
