@@ -159,6 +159,9 @@ jobs:
             if (additions.length === 0 && deletions.length === 0) {
               core.info('No applicable changes for commit.');
               core.setOutput('skipped', 'true');
+              // 即便没有普通文件变更，也输出是否存在子模块变化供后续步骤判断
+              core.setOutput('has_submodule_change', hasSubmoduleChange ? 'true' : 'false');
+              core.setOutput('branch_name', branchName);
               return;
             }
 
@@ -213,3 +216,99 @@ jobs:
 
             core.setOutput('pr_number', pr.number.toString());
             core.setOutput('pr_url', pr.html_url);
+            core.setOutput('has_submodule_change', hasSubmoduleChange ? 'true' : 'false');
+            core.setOutput('branch_name', branchName);
+
+      - name: Commit submodule pointer (SSH-signed)
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && secrets.SIGNING_SSH_PRIVATE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Prepare SSH signing key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SIGNING_SSH_PRIVATE_KEY }}" > ~/.ssh/signing_key
+          chmod 600 ~/.ssh/signing_key
+
+          # Commit identity (fallback to GitHub Actions bot if not provided)
+          COMMIT_NAME="${{ secrets.COMMITTER_NAME }}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
+          COMMIT_EMAIL="${{ secrets.COMMITTER_EMAIL }}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+
+          git config --global user.name "$COMMIT_NAME"
+          git config --global user.email "$COMMIT_EMAIL"
+          git config --global gpg.format ssh
+          git config --global user.signingkey ~/.ssh/signing_key
+          git config --global commit.gpgsign true
+
+          # Ensure local branch is up-to-date with remote
+          BRANCH="${{ steps.create_commit_pr.outputs.branch_name }}"
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+
+          # Stage submodule pointer changes
+          git add core/src/foss/golang/clash || true
+          [ -f .gitmodules ] && git add .gitmodules || true
+
+          # If nothing to commit, exit quietly
+          if git diff --cached --quiet; then
+            echo "No submodule pointer changes to commit (SSH)."
+            exit 0
+          fi
+
+          git commit -m "Update submodule: core/src/foss/golang/clash"
+          git push origin HEAD:"$BRANCH"
+
+      - name: Commit submodule pointer (GPG-signed)
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (secrets.SIGNING_SSH_PRIVATE_KEY == '' && secrets.GPG_PRIVATE_KEY != '') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          KEY_ID=$(gpg --list-secret-keys --keyid-format=long | grep '^sec' | sed 's|.*/||;s| .*||' | head -n1)
+
+          COMMIT_NAME="${{ secrets.COMMITTER_NAME }}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
+          COMMIT_EMAIL="${{ secrets.COMMITTER_EMAIL }}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+
+          git config --global user.name "$COMMIT_NAME"
+          git config --global user.email "$COMMIT_EMAIL"
+          git config --global user.signingkey "$KEY_ID"
+          git config --global gpg.program gpg
+          git config --global commit.gpgsign true
+
+          BRANCH="${{ steps.create_commit_pr.outputs.branch_name }}"
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+
+          git add core/src/foss/golang/clash || true
+          [ -f .gitmodules ] && git add .gitmodules || true
+
+          if git diff --cached --quiet; then
+            echo "No submodule pointer changes to commit (GPG)."
+            exit 0
+          fi
+
+          git commit -m "Update submodule: core/src/foss/golang/clash"
+          git push origin HEAD:"$BRANCH"
+
+      - name: Commit submodule pointer (unsigned fallback)
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (secrets.SIGNING_SSH_PRIVATE_KEY == '' && secrets.GPG_PRIVATE_KEY == '') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "No signing keys provided. Committing submodule pointer without signature (will show Unverified)."
+          BRANCH="${{ steps.create_commit_pr.outputs.branch_name }}"
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+          git add core/src/foss/golang/clash || true
+          [ -f .gitmodules ] && git add .gitmodules || true
+          if git diff --cached --quiet; then
+            echo "No submodule pointer changes to commit (unsigned)."
+            exit 0
+          fi
+          git commit -m "Update submodule: core/src/foss/golang/clash"
+          git push origin HEAD:"$BRANCH"
