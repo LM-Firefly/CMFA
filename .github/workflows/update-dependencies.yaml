@@ -5,6 +5,10 @@ on:
       - core-updated
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-dependencies:
     runs-on: ubuntu-latest
@@ -59,25 +63,121 @@ jobs:
       #          app_id: ${{ secrets.MAINTAINER_APPID }}
       #          private_key: ${{ secrets.MAINTAINER_APP_PRIVATE_KEY }}
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v6
+      # 使用 GitHub API 创建带 Verified 签名的提交并打开 PR
+      - name: Create commit and PR via GitHub API (Verified)
+        id: create_commit_pr
+        uses: actions/github-script@v7
         with:
-          #          token: ${{ steps.generate-token.outputs.token }}
-          token: ${{env.GIT_TOKEN}}
-          commit-message: Update Dependencies
-          branch: update-dependencies
-          delete-branch: true
-          title: "Update Dependencies"
-          draft: false
-          body: |
-            - Update Clash-Meta Core
-            - Update Go Module Dependecies
-          labels: |
-            Update
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+            const path = require('path');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branchName = 'update-dependencies';
 
-      - name: PR result
-        if: ${{ steps.cpr.outputs.pull-request-number }}
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+            // 1) 获取默认分支
+            const { data: repoData } = await github.rest.repos.get({ owner, repo });
+            const baseBranch = repoData.default_branch;
+
+            // 2) 获取默认分支的 head OID
+            const { data: baseRef } = await github.rest.git.getRef({ owner, repo, ref: `heads/${baseBranch}` });
+            const baseOid = baseRef.object.sha;
+
+            // 3) 确保工作分支存在；如不存在则从默认分支创建
+            let branchOid = baseOid;
+            try {
+              const { data: branchRef } = await github.rest.git.getRef({ owner, repo, ref: `heads/${branchName}` });
+              branchOid = branchRef.object.sha;
+            } catch (e) {
+              const { data: newRef } = await github.rest.git.createRef({ owner, repo, ref: `refs/heads/${branchName}`, sha: baseOid });
+              branchOid = newRef.object.sha;
+            }
+
+            // 4) 收集本地变更，构造 additions/deletions
+            const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
+            if (!status) {
+              core.info('No changes detected. Skipping commit/PR creation.');
+              core.setOutput('skipped', 'true');
+              return;
+            }
+
+            const lines = status.split('\n').filter(Boolean);
+            const additions = [];
+            const deletions = [];
+
+            for (const line of lines) {
+              const code = line.slice(0, 2);
+              let filePath = line.slice(3).trim();
+
+              // 处理重命名："R  old -> new"，作为删除+新增
+              if (code.startsWith('R')) {
+                const [from, to] = filePath.split(' -> ');
+                deletions.push({ path: from.replace(/\\/g, '/') });
+                filePath = to;
+              }
+
+              // 删除
+              if (code.includes('D')) {
+                deletions.push({ path: filePath.replace(/\\/g, '/') });
+                continue;
+              }
+
+              // 新增/修改：读取文件并 base64
+              const absPath = path.join(process.env.GITHUB_WORKSPACE || process.cwd(), filePath);
+              const content = fs.readFileSync(absPath);
+              const b64 = content.toString('base64');
+              additions.push({ path: filePath.replace(/\\/g, '/'), contents: b64 });
+            }
+
+            if (additions.length === 0 && deletions.length === 0) {
+              core.info('No applicable changes for commit.');
+              core.setOutput('skipped', 'true');
+              return;
+            }
+
+            // 5) GraphQL mutation：创建提交（GitHub 自动 Verified 签名）
+            const mutation = `
+              mutation($input: CreateCommitOnBranchInput!) {
+                createCommitOnBranch(input: $input) {
+                  commit { oid url }
+                }
+              }
+            `;
+
+            const input = {
+              branch: { repositoryNameWithOwner: `${owner}/${repo}`, branchName },
+              message: {
+                headline: 'Update Dependencies',
+                body: '- Update Clash-Meta Core\n- Update Go Module Dependencies'
+              },
+              expectedHeadOid: branchOid,
+              fileChanges: { additions, deletions }
+            };
+
+            const result = await github.graphql(mutation, { input });
+            core.info(`Created commit: ${JSON.stringify(result.createCommitOnBranch.commit)}`);
+
+            // 6) 创建/复用 PR
+            // 如果已有打开的 PR 指向该分支，则复用
+            const { data: prs } = await github.rest.pulls.list({ owner, repo, state: 'open', head: `${owner}:${branchName}`, base: baseBranch });
+            let pr;
+            if (prs.length > 0) {
+              pr = prs[0];
+            } else {
+              const created = await github.rest.pulls.create({
+                owner,
+                repo,
+                title: 'Update Dependencies',
+                head: branchName,
+                base: baseBranch,
+                body: '- Update Clash-Meta Core\n- Update Go Module Dependencies',
+                maintainer_can_modify: true,
+                draft: false
+              });
+              pr = created.data;
+            }
+
+            core.setOutput('pr_number', pr.number.toString());
+            core.setOutput('pr_url', pr.html_url);
