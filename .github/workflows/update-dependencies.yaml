@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIT_TOKEN: ${{secrets.ACTIONS_TOKEN}}
+      # Map secrets to env so they can be used in `if:` expressions via env.*
+      SIGNING_SSH_PRIVATE_KEY: ${{ secrets.SIGNING_SSH_PRIVATE_KEY }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      COMMITTER_NAME: ${{ secrets.COMMITTER_NAME }}
+      COMMITTER_EMAIL: ${{ secrets.COMMITTER_EMAIL }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -159,6 +165,10 @@ jobs:
             if (additions.length === 0 && deletions.length === 0) {
               core.info('No applicable changes for commit.');
               core.setOutput('skipped', 'true');
+              // 即便没有普通文件变更，也输出是否存在子模块变化供后续步骤判断
+              core.setOutput('has_submodule_change', hasSubmoduleChange ? 'true' : 'false');
+              core.setOutput('branch_name', branchName);
+              core.setOutput('base_branch', baseBranch);
               return;
             }
 
@@ -213,3 +223,6 @@ jobs:
 
             core.setOutput('pr_number', pr.number.toString());
             core.setOutput('pr_url', pr.html_url);
+            core.setOutput('has_submodule_change', hasSubmoduleChange ? 'true' : 'false');
+            core.setOutput('branch_name', branchName);
+            core.setOutput('base_branch', baseBranch);
