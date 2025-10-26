@@ -33,11 +33,18 @@ jobs:
           set -euo pipefail
           # Sync submodule config (ensures .git/config picks up .gitmodules branch = Alpha)
           git submodule sync -- core/src/foss/golang/clash
+          # Ensure .gitmodules has the desired branch and URL (idempotent)
+          git config -f .gitmodules submodule.clash-foss.branch Alpha || true
+          URL_IN_GITMODULES=$(git config -f .gitmodules --get submodule.clash-foss.url || true)
+          if [ -n "$URL_IN_GITMODULES" ]; then
+            git -C core/src/foss/golang/clash remote set-url origin "$URL_IN_GITMODULES" || true
+          fi
           # Ensure submodule is initialized
           git submodule update --init -- core/src/foss/golang/clash
           # Explicitly move submodule worktree to Alpha
-          git -C core/src/foss/golang/clash fetch origin Alpha --depth=1
+          git -C core/src/foss/golang/clash fetch --no-tags origin Alpha --depth=20 || git -C core/src/foss/golang/clash fetch origin Alpha
           git -C core/src/foss/golang/clash checkout -B Alpha origin/Alpha || git -C core/src/foss/golang/clash checkout Alpha
+          echo "Submodule clash at $(git -C core/src/foss/golang/clash rev-parse --short=12 HEAD) on Alpha"
 
       - name: Setup Java (JDK 24)
         uses: actions/setup-java@v5
@@ -278,8 +285,9 @@ jobs:
             git checkout -B "$BRANCH"
           fi
 
-          # Stage submodule pointer changes
-          git add core/src/foss/golang/clash || true
+          # Stage submodule pointer via update-index to avoid implicit fetch
+          NEW_SHA=$(git -C core/src/foss/golang/clash rev-parse HEAD)
+          git update-index --add --cacheinfo 160000 "$NEW_SHA" core/src/foss/golang/clash
           [ -f .gitmodules ] && git add .gitmodules || true
 
           # If nothing to commit, exit quietly
@@ -332,7 +340,8 @@ jobs:
             git checkout -B "$BRANCH"
           fi
 
-          git add core/src/foss/golang/clash || true
+          NEW_SHA=$(git -C core/src/foss/golang/clash rev-parse HEAD)
+          git update-index --add --cacheinfo 160000 "$NEW_SHA" core/src/foss/golang/clash
           [ -f .gitmodules ] && git add .gitmodules || true
 
           if git diff --cached --quiet; then
@@ -366,7 +375,8 @@ jobs:
           else
             git checkout -B "$BRANCH"
           fi
-          git add core/src/foss/golang/clash || true
+          NEW_SHA=$(git -C core/src/foss/golang/clash rev-parse HEAD)
+          git update-index --add --cacheinfo 160000 "$NEW_SHA" core/src/foss/golang/clash
           [ -f .gitmodules ] && git add .gitmodules || true
           if git diff --cached --quiet; then
             echo "No submodule pointer changes to commit (unsigned)."
