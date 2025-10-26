@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GIT_TOKEN: ${{secrets.ACTIONS_TOKEN}}
+      # Map secrets to env so they can be used in `if:` expressions via env.*
+      SIGNING_SSH_PRIVATE_KEY: ${{ secrets.SIGNING_SSH_PRIVATE_KEY }}
+      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      COMMITTER_NAME: ${{ secrets.COMMITTER_NAME }}
+      COMMITTER_EMAIL: ${{ secrets.COMMITTER_EMAIL }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -220,18 +225,18 @@ jobs:
             core.setOutput('branch_name', branchName);
 
       - name: Commit submodule pointer (SSH-signed)
-        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && secrets.SIGNING_SSH_PRIVATE_KEY != '' }}
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && env.SIGNING_SSH_PRIVATE_KEY != '' }}
         shell: bash
         run: |
           set -euo pipefail
           # Prepare SSH signing key
           mkdir -p ~/.ssh
-          echo "${{ secrets.SIGNING_SSH_PRIVATE_KEY }}" > ~/.ssh/signing_key
+          echo "$SIGNING_SSH_PRIVATE_KEY" > ~/.ssh/signing_key
           chmod 600 ~/.ssh/signing_key
 
           # Commit identity (fallback to GitHub Actions bot if not provided)
-          COMMIT_NAME="${{ secrets.COMMITTER_NAME }}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
-          COMMIT_EMAIL="${{ secrets.COMMITTER_EMAIL }}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          COMMIT_NAME="${COMMITTER_NAME:-}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
+          COMMIT_EMAIL="${COMMITTER_EMAIL:-}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
 
           git config --global user.name "$COMMIT_NAME"
           git config --global user.email "$COMMIT_EMAIL"
@@ -258,7 +263,7 @@ jobs:
           git push origin HEAD:"$BRANCH"
 
       - name: Commit submodule pointer (GPG-signed)
-        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (secrets.SIGNING_SSH_PRIVATE_KEY == '' && secrets.GPG_PRIVATE_KEY != '') }}
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (env.SIGNING_SSH_PRIVATE_KEY == '' && env.GPG_PRIVATE_KEY != '') }}
         shell: bash
         run: |
           set -euo pipefail
@@ -268,11 +273,11 @@ jobs:
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
 
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
           KEY_ID=$(gpg --list-secret-keys --keyid-format=long | grep '^sec' | sed 's|.*/||;s| .*||' | head -n1)
 
-          COMMIT_NAME="${{ secrets.COMMITTER_NAME }}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
-          COMMIT_EMAIL="${{ secrets.COMMITTER_EMAIL }}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          COMMIT_NAME="${COMMITTER_NAME:-}"; [ -z "$COMMIT_NAME" ] && COMMIT_NAME="github-actions[bot]"
+          COMMIT_EMAIL="${COMMITTER_EMAIL:-}"; [ -z "$COMMIT_EMAIL" ] && COMMIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
 
           git config --global user.name "$COMMIT_NAME"
           git config --global user.email "$COMMIT_EMAIL"
@@ -296,7 +301,7 @@ jobs:
           git push origin HEAD:"$BRANCH"
 
       - name: Commit submodule pointer (unsigned fallback)
-        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (secrets.SIGNING_SSH_PRIVATE_KEY == '' && secrets.GPG_PRIVATE_KEY == '') }}
+        if: ${{ steps.create_commit_pr.outputs.has_submodule_change == 'true' && (env.SIGNING_SSH_PRIVATE_KEY == '' && env.GPG_PRIVATE_KEY == '') }}
         shell: bash
         run: |
           set -euo pipefail
