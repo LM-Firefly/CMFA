@@ -19,12 +19,25 @@ jobs:
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       COMMITTER_NAME: ${{ secrets.COMMITTER_NAME }}
       COMMITTER_EMAIL: ${{ secrets.COMMITTER_EMAIL }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
 
       - name: Checkout and Update submodules
         run: git submodule update --init --recursive --remote --force
+
+      - name: Ensure clash submodule on Alpha branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Sync submodule config (ensures .git/config picks up .gitmodules branch = Alpha)
+          git submodule sync -- core/src/foss/golang/clash
+          # Ensure submodule is initialized
+          git submodule update --init -- core/src/foss/golang/clash
+          # Explicitly move submodule worktree to Alpha
+          git -C core/src/foss/golang/clash fetch origin Alpha --depth=1
+          git -C core/src/foss/golang/clash checkout -B Alpha origin/Alpha || git -C core/src/foss/golang/clash checkout Alpha
 
       - name: Setup Java (JDK 24)
         uses: actions/setup-java@v5
@@ -248,15 +261,21 @@ jobs:
 
           # Ensure local branch is up-to-date with remote
           BRANCH="update-dependencies"
-          BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
           git fetch --all --prune
+          BASE="${DEFAULT_BRANCH:-}"
+          if [ -z "$BASE" ]; then
+            BASE=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          fi
+          if [ -z "$BASE" ]; then
+            BASE="main"
+          fi
+
           if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BRANCH"
-          else
-            if [ -z "$BASE" ]; then
-              BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-            fi
+          elif git rev-parse --verify "origin/$BASE" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BASE"
+          else
+            git checkout -B "$BRANCH"
           fi
 
           # Stage submodule pointer changes
@@ -296,15 +315,21 @@ jobs:
           git config --global commit.gpgsign true
 
           BRANCH="update-dependencies"
-          BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
           git fetch --all --prune
+          BASE="${DEFAULT_BRANCH:-}"
+          if [ -z "$BASE" ]; then
+            BASE=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          fi
+          if [ -z "$BASE" ]; then
+            BASE="main"
+          fi
+
           if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BRANCH"
-          else
-            if [ -z "$BASE" ]; then
-              BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-            fi
+          elif git rev-parse --verify "origin/$BASE" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BASE"
+          else
+            git checkout -B "$BRANCH"
           fi
 
           git add core/src/foss/golang/clash || true
@@ -325,15 +350,21 @@ jobs:
           set -euo pipefail
           echo "No signing keys provided. Committing submodule pointer without signature (will show Unverified)."
           BRANCH="update-dependencies"
-          BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
           git fetch --all --prune
+          BASE="${DEFAULT_BRANCH:-}"
+          if [ -z "$BASE" ]; then
+            BASE=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          fi
+          if [ -z "$BASE" ]; then
+            BASE="main"
+          fi
+
           if git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BRANCH"
-          else
-            if [ -z "$BASE" ]; then
-              BASE=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-            fi
+          elif git rev-parse --verify "origin/$BASE" >/dev/null 2>&1; then
             git checkout -B "$BRANCH" "origin/$BASE"
+          else
+            git checkout -B "$BRANCH"
           fi
           git add core/src/foss/golang/clash || true
           [ -f .gitmodules ] && git add .gitmodules || true
