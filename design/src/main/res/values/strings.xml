@@ -47,7 +47,8 @@
 
     <string name="application_broken">Application Broken</string>
     <string name="application_crashed">Application Crashed</string>
-    <string name="application_broken_tips">App lacks the necessary runtime components, which is usually caused by downloading an incomplete apk.</string>
+    <string name="application_broken_tips">App lacks the necessary runtime components, which is
+        usually caused by downloading an incomplete apk.</string>
     <string name="reinstall">Reinstall</string>
     <string name="github_releases">Github Releases</string>
 
@@ -220,13 +221,15 @@
     <string name="google_play">Google Play</string>
     <string name="clash_meta_core">Clash Meta Core</string>
     <string name="clash_wiki_url" translatable="false">https://github.com/Dreamacro/clash/wiki</string>
-    <string name="meta_github_url" translatable="false">https://github.com/MetaCubeX/ClashMetaForAndroid</string>
+    <string name="meta_github_url" translatable="false">
+        https://github.com/MetaCubeX/ClashMetaForAndroid</string>
     <string name="clash_meta_core_url" translatable="false">https://github.com/MetaCubeX/Clash.Meta</string>
 
     <string name="tips_properties"><![CDATA[Accept Only <strong>Clash Config</strong>(including <strong>Proxy</strong>/<strong>Rules</strong>)]]></string>
     <string name="tips_help"><![CDATA[Clash Meta for Android is a <strong>freeware</strong> and we do <strong>NOT</strong> provide any service for it]]></string>
 
-    <string name="google_play_url" translatable="false">https://play.google.com/store/apps/details?id=com.github.kr328.clash</string>
+    <string name="google_play_url" translatable="false">
+        https://play.google.com/store/apps/details?id=com.github.kr328.clash</string>
 
     <string name="app">App</string>
     <string name="service">Service</string>
@@ -290,7 +293,8 @@
     <string name="unable_to_start_vpn">Unable to start VPN component</string>
 
     <string name="version_updated">App Updated</string>
-    <string name="version_updated_tips">The settings have been reseted and the old profiles needs to be saved again.</string>
+    <string name="version_updated_tips">The settings have been reseted and the old profiles needs to
+        be saved again.</string>
 
     <string name="mode_switch_tips">Valid only for current session</string>
 
@@ -323,10 +327,13 @@
     <string name="geox_geoip">GeoIp Url</string>
     <string name="geox_mmdb">MMDB Url</string>
     <string name="geox_geosite">Geosite Url</string>
-    <string name="geoip_url" translatable="false">https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/release/geoip.dat</string>
-    <string name="mmdb_url" translatable="false">https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/release/country.mmdb</string>
-    <string name="geosite_url" translatable="false">https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/release/geosite.dat</string>
-    <string name="geox_files" >Geo Files</string>
+    <string name="geoip_url" translatable="false">
+        https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/geoip.dat</string>
+    <string name="mmdb_url" translatable="false">
+        https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/country.mmdb</string>
+    <string name="geosite_url" translatable="false">
+        https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/geosite.dat</string>
+    <string name="geox_files">Geo Files</string>
     <string name="import_geoip_file">Import GeoIP Database</string>
     <string name="import_geosite_file">Import GeoSite Database</string>
     <string name="import_country_file">Import Country Database</string>
@@ -344,4 +351,15 @@
 
     <string name="hide_app_icon_title">Hide App Icon</string>
     <string name="hide_app_icon_desc">You can dial *#*#252746382#*#* to open this App</string>
+    <string name="group_dropdown">Select Group</string>
+    <!-- Added missing default keys to match localized variants (avoid lint removing them) -->
+    <string name="disable_sniffer">Disable Sniffer</string>
+    <string name="port_whitelist">Port Whitelist</string>
+    <string name="script_mode">Script Mode</string>
+    <string name="sideload_geoip">Sideload GEOIP</string>
+    <string name="sideload_geoip_summary">External GEOIP database</string>
+    <string name="sniffing">Sniffer Mode</string>
+    <string name="sniffer_config">Load Sniffer From Config</string>
+    <string name="sniffer_override">Override Sniffer Config</string>
+    <string name="sniff">Sniff</string>
 </resources>

@@ -84,6 +84,9 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
         binding.tips.text = context.getHtml(R.string.tips_properties)
 
         binding.scrollRoot.bindAppBarElevation(binding.activityBarLayout)
+
+    val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+    binding.saveView.applyRoundedSelectableBackground(radius)
     }
 
     fun inputName() {

@@ -50,7 +50,7 @@
                         android:clickable="true"
                         android:contentDescription="@string/delete_all_logs"
                         android:focusable="true"
-                        android:onClick="@{() -> self.requests.offer(Request.DeleteAll.INSTANCE)}"
+                        android:onClick="@{() -> self.sendRequest(Request.DeleteAll.INSTANCE)}"
                         android:padding="@dimen/toolbar_image_action_padding"
                         android:src="@drawable/ic_baseline_clear_all" />
                 </RelativeLayout>
@@ -59,7 +59,7 @@
             <com.github.kr328.clash.design.view.ActionLabel
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> self.requests.offer(Request.StartLogcat.INSTANCE)}"
+                android:onClick="@{() -> self.sendRequest(Request.StartLogcat.INSTANCE)}"
                 app:icon="@drawable/ic_baseline_adb"
                 app:subtext="@string/tap_to_start"
                 app:text="@string/clash_logcat" />
