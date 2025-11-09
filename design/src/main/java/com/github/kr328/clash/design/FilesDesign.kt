@@ -64,6 +64,8 @@ class FilesDesign(context: Context) : Design<FilesDesign.Request>(context) {
 
         binding.activityBarLayout.applyFrom(context)
 
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.newView.applyRoundedSelectableBackground(radius)
         binding.mainList.recyclerList.also {
             it.applyLinearAdapter(context, adapter)
             it.bindAppBarElevation(binding.activityBarLayout)
@@ -116,6 +118,28 @@ class FilesDesign(context: Context) : Design<FilesDesign.Request>(context) {
         binding.file = file
         binding.currentInBase = this.binding.currentInBaseDir
         binding.configurationEditable = this.binding.configurationEditable
+        val topRadius = context.getPixels(R.dimen.bottom_sheet_corner_radius).toFloat()
+        val itemRadius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        val topRadii = floatArrayOf(
+            topRadius, topRadius,
+            topRadius, topRadius,
+            itemRadius, itemRadius,
+            itemRadius, itemRadius
+        )
+        val items = listOf(
+            binding.importItem,
+            binding.exportItem,
+            binding.renameItem,
+            binding.deleteItem,
+        )
+        val firstVisible = items.firstOrNull { it.visibility == View.VISIBLE }
+        items.forEach { item ->
+            if (item.visibility == View.VISIBLE && item === firstVisible) {
+                item.applyRoundedSelectableBackground(topRadii)
+            } else {
+                item.applyRoundedSelectableBackground(itemRadius)
+            }
+        }
 
         dialog.setContentView(binding.root)
         dialog.show()
