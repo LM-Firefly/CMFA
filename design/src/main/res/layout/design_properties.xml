@@ -133,6 +133,7 @@
                         android:visibility="@{processing ? View.VISIBLE : View.GONE}" />
 
                     <ImageView
+                        android:id="@+id/save_view"
                         android:layout_width="@dimen/item_tailing_component_size"
                         android:layout_height="@dimen/item_tailing_component_size"
                         android:layout_gravity="end|center_vertical"

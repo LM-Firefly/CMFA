@@ -72,10 +72,18 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
 
                                 state.now = group.now
 
+                                // 修改此处，允许对URLTest、LoadBalance和Fallback类型的代理组进行选择操作
+                                val selectable = when (group.type) {
+                                    Proxy.Type.Selector -> true
+                                    Proxy.Type.URLTest -> true
+                                    Proxy.Type.Fallback -> true
+                                    Proxy.Type.LoadBalance -> true
+                                    else -> false
+                                }
                                 design.updateGroup(
                                     it.index,
                                     group.proxies,
-                                    group.type == Proxy.Type.Selector,
+                                    selectable,
                                     state,
                                     unorderedStates
                                 )
@@ -83,9 +91,19 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                         }
                         is ProxyDesign.Request.Select -> {
                             withClash {
-                                patchSelector(names[it.index], it.name)
-
-                                states[it.index].now = it.name
+                                // 检查当前选择的节点是否已经是固定的节点，如果是则取消固定
+                                val currentGroup = names[it.index]
+                                val currentState = states[it.index]
+                                
+                                if (currentState.now == it.name) {
+                                    // 如果点击的是已经选择的节点，则取消固定
+                                    unfixedProxy(currentGroup)
+                                    currentState.now = ""
+                                } else {
+                                    // 否则正常选择节点
+                                    patchSelector(currentGroup, it.name)
+                                    currentState.now = it.name
+                                }
                             }
 
                             design.requestRedrawVisible()

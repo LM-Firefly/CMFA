@@ -76,6 +76,10 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
             it.bindAppBarElevation(binding.activityBarLayout)
             it.applyLinearAdapter(context, adapter)
         }
+
+        val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        binding.updateView.applyRoundedSelectableBackground(radius)
+        binding.addView.applyRoundedSelectableBackground(radius)
     }
 
     private fun showMenu(profile: Profile) {
@@ -87,6 +91,17 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
         binding.master = this
         binding.self = dialog
         binding.profile = profile
+        if (binding.updateItem.visibility == View.VISIBLE) {
+            val topRadius = context.getPixels(R.dimen.bottom_sheet_corner_radius).toFloat()
+            val itemRadius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+            val radii = floatArrayOf(
+                topRadius, topRadius,
+                topRadius, topRadius,
+                itemRadius, itemRadius,
+                itemRadius, itemRadius
+            )
+            binding.updateItem.applyRoundedSelectableBackground(radii)
+        }
 
         dialog.setContentView(binding.root)
         dialog.show()

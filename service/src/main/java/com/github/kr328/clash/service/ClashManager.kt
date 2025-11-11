@@ -58,6 +58,17 @@ class ClashManager(private val context: Context) : IClashManager,
         }
     }
 
+    override fun unfixedProxy(group: String): Boolean {
+        // 发送HTTP DELETE请求到Clash核心API来取消固定代理节点
+        return Clash.unfixedProxy(group).also {
+            val current = store.activeProfile ?: return@also
+
+            if (it) {
+                SelectionDao().removeSelected(current, group)
+            }
+        }
+    }
+
     override fun patchOverride(slot: Clash.OverrideSlot, configuration: ConfigurationOverride) {
         Clash.patchOverride(slot, configuration)
 

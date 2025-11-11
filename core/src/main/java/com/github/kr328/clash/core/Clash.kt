@@ -131,6 +131,10 @@ object Clash {
         return Bridge.nativePatchSelector(selector, name)
     }
 
+    fun unfixedProxy(selector: String): Boolean {
+        return Bridge.nativeUnfixedProxy(selector)
+    }
+
     fun fetchAndValid(
         path: File,
         url: String,

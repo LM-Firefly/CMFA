@@ -50,6 +50,9 @@ class ProvidersDesign(
 
         binding.mainList.recyclerList.bindAppBarElevation(binding.activityBarLayout)
         binding.mainList.recyclerList.applyLinearAdapter(context, adapter)
+
+    val radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+    binding.updateView.applyRoundedSelectableBackground(radius)
     }
 
     fun requestUpdateAll() {
