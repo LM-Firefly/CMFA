@@ -6,10 +6,17 @@ import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.design.BR
 
 class ProviderState(
-    val provider: Provider,
+    provider: Provider,
     updatedAt: Long,
     updating: Boolean,
 ) : BaseObservable() {
+    var provider: Provider = provider
+        @Bindable get
+        set(value) {
+            field = value
+            notifyPropertyChanged(BR.provider)
+        }
+
     var updatedAt: Long = updatedAt
         @Bindable get
         set(value) {

@@ -48,7 +48,7 @@ class ProfileReceiver : BroadcastReceiver() {
         private val lock = Mutex()
         private var initialized: Boolean = false
 
-        suspend fun rescheduleAll(context: Context) = lock.withLock {
+        suspend fun rescheduleAll(context: Context): Unit = lock.withLock {
             if (initialized)
                 return
 

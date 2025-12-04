@@ -64,3 +64,6 @@ google-services.json
 
 # MacOS
 .DS_Store
+
+# Gradle
+.gradle-jdk24/*

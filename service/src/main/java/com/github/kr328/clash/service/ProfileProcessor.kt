@@ -21,6 +21,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.io.FileNotFoundException
 import java.math.BigDecimal
 import java.net.URL
 import java.util.*
@@ -29,6 +30,22 @@ import java.util.concurrent.TimeUnit
 object ProfileProcessor {
     private val profileLock = Mutex()
     private val processLock = Mutex()
+
+    suspend fun clone(context: Context, source: UUID, target: UUID) {
+        withContext(NonCancellable) {
+            profileLock.withLock {
+                val s = context.importedDir.resolve(source.toString())
+                val t = context.pendingDir.resolve(target.toString())
+
+                if (!s.exists())
+                    throw FileNotFoundException("profile $source not found")
+
+                t.deleteRecursively()
+
+                s.copyRecursively(t)
+            }
+        }
+    }
 
     suspend fun apply(context: Context, uuid: UUID, callback: IFetchObserver? = null) {
         withContext(NonCancellable) {
@@ -73,7 +90,7 @@ object ProfileProcessor {
                         var download: Long = 0
                         var total: Long = 0
                         var expire: Long = 0
-                        if (snapshot?.type == Profile.Type.Url) {
+                        if (snapshot.type == Profile.Type.Url) {
                             if (snapshot.source.startsWith("https://", true)) {
                                 val client = OkHttpClient()
                                 val versionName = context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -129,7 +146,7 @@ object ProfileProcessor {
                                 .deleteRecursively()
 
                             context.sendProfileChanged(snapshot.uuid)
-                        } else if (snapshot?.type == Profile.Type.File) {
+                        } else if (snapshot.type == Profile.Type.File) {
                             val new = Imported(
                                 snapshot.uuid,
                                 snapshot.name,

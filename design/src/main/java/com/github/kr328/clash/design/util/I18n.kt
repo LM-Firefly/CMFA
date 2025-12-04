@@ -36,6 +36,25 @@ fun Provider.type(context: Context): String {
     return context.getString(R.string.format_provider_type, type, vehicle)
 }
 
+fun Provider.subtitle(context: Context): String {
+    val typeStr = type(context)
+    val subInfo = subscriptionInfo ?: return typeStr
+
+    if (subInfo.total == 0L && subInfo.expire == 0L) {
+        return typeStr
+    }
+
+    val used = subInfo.upload + subInfo.download
+    val total = subInfo.total
+    val expire = subInfo.expire
+
+    val usedStr = used.toBytesString()
+    val totalStr = if (total > 0) total.toBytesString() else "∞"
+    val expireStr = if (expire > 0) Date(expire * 1000).format(context, includeDate = true, includeTime = false) else "∞"
+
+    return "$typeStr\n$usedStr / $totalStr  $expireStr"
+}
+
 @JvmOverloads
 fun Date.format(
     context: Context,

@@ -2,6 +2,7 @@ package com.github.kr328.clash.service.document
 
 import android.content.Context
 import android.provider.DocumentsContract
+import com.github.kr328.clash.service.ProfileProcessor
 import com.github.kr328.clash.service.R
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
@@ -138,10 +139,6 @@ class Picker(private val context: Context) {
             )
         )
 
-        val source = context.importedDir.resolve(uuid.toString())
-        val target = context.pendingDir.resolve(uuid.toString())
-
-        target.deleteRecursively()
-        source.copyRecursively(target)
+        ProfileProcessor.clone(context, uuid, uuid)
     }
 }
