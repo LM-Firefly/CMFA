@@ -15,6 +15,8 @@ interface IClashManager {
 
     fun patchSelector(group: String, name: String): Boolean
 
+    fun unfixedProxy(group: String): Boolean
+
     suspend fun healthCheck(group: String)
     suspend fun updateProvider(type: Provider.Type, name: String)
 

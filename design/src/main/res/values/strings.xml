@@ -348,4 +348,14 @@
     <string name="hide_app_icon_desc">You can dial *#*#252746382#*#* to open this App</string>
     <string name="import_from_qr_no_permission">Camera access is restricted. Please enable it in Settings.</string>
     <string name="import_from_qr_exception">An unhandled system exception occurred.</string>
+
+    <string name="disable_sniffer">Disable Sniffer</string>
+    <string name="port_whitelist">Port Whitelist</string>
+    <string name="script_mode">Script Mode</string>
+    <string name="sideload_geoip">Sideload GEOIP</string>
+    <string name="sideload_geoip_summary">External GEOIP Database</string>
+    <string name="sniff">Sniff</string>
+    <string name="sniffer_config">Load Sniffer From Config</string>
+    <string name="sniffer_override">Override Sniffer Config</string>
+    <string name="sniffing">Sniffer Mode</string>
 </resources>

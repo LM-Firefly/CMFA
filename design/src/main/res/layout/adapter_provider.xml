@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/item_text_margin"
-                android:text="@{I18nKt.type(provider, context)}"
+                android:text="@{I18nKt.subtitle(provider, context)}"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
         </LinearLayout>
 

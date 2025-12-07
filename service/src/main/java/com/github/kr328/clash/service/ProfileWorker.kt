@@ -47,8 +47,8 @@ class ProfileWorker : BaseService() {
     }
 
     override fun onDestroy() {
-        stopForeground(true)
-
+        // Use modern API constant to remove the foreground notification
+        stopForeground(android.app.Service.STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
 
