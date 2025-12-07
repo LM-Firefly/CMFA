@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.viewpager2.widget.ViewPager2
 import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.TunnelState
@@ -106,10 +107,31 @@ class ProxyDesign(
             binding.elevationView.visibility = View.GONE
             binding.pagesView.visibility = View.GONE
             binding.urlTestFloatView.visibility = View.GONE
+            binding.groupsMenu.visibility = View.GONE
         } else {
             binding.urlTestFloatView.supportImageTintList = ColorStateList.valueOf(
                 context.resolveThemedColor(com.google.android.material.R.attr.colorOnPrimary)
             )
+
+            binding.groupsMenu.setOnClickListener {
+                val popup = PopupMenu(context, it)
+
+                groupNames.forEachIndexed { index, name ->
+                    popup.menu.add(0, index, index, name).apply {
+                        isCheckable = true
+                        isChecked = index == binding.pagesView.currentItem
+                    }
+                }
+
+                popup.menu.setGroupCheckable(0, true, true)
+
+                popup.setOnMenuItemClickListener { item ->
+                    binding.pagesView.setCurrentItem(item.itemId, false)
+                    true
+                }
+
+                popup.show()
+            }
 
             binding.pagesView.apply {
                 adapter = ProxyPageAdapter(

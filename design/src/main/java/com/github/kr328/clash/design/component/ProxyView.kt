@@ -191,5 +191,29 @@ class ProxyView(
 
             drawText(state.subtitle, 0, subtitleCount, x, y, paint)
         }
+
+        // draw pinned indicator
+        if (state.pinned) {
+            val size = state.config.textSize * 2.4f
+            val x: Float
+            val y: Float
+
+            if (state.config.proxyLine == 1) {
+                x = width
+                y = 0f
+            } else {
+                x = width - state.config.layoutPadding
+                y = state.config.layoutPadding
+            }
+
+            val path = Path()
+            path.moveTo(x, y)
+            path.lineTo(x - size, y)
+            path.lineTo(x, y + size)
+            path.close()
+
+            paint.color = 0xFF8D5F00.toInt()
+            canvas.drawPath(path, paint)
+        }
     }
 }

@@ -22,7 +22,7 @@ class RemoteService : BaseService(), IRemoteService {
         clash = ClashManager(this)
         profile = ProfileManager(this)
         clashBinder = clash?.wrap() as IClashManager?
-        profileBinder = profile?.wrap() as IProfileManager?
+        profile?.let { profileBinder = it.wrap() as IProfileManager? }
     }
 
     override fun onDestroy() {

@@ -97,14 +97,45 @@
                 </RelativeLayout>
             </com.github.kr328.clash.design.view.ActivityBarLayout>
 
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_layout_view"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/tab_layout_height"
-                android:alpha="0.96"
-                android:background="?android:windowBackground"
-                app:tabBackground="@android:color/transparent"
-                app:tabMode="scrollable" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_layout_view"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/tab_layout_height"
+                    android:layout_weight="1"
+                    android:alpha="0.96"
+                    android:background="?android:windowBackground"
+                    app:tabBackground="@android:color/transparent"
+                    app:tabMode="scrollable" />
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/tab_layout_height"
+                    android:alpha="0.96"
+                    android:background="?android:windowBackground"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <ImageView
+                        android:id="@+id/groups_menu"
+                        android:layout_width="@dimen/item_tailing_component_size"
+                        android:layout_height="@dimen/item_tailing_component_size"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginStart="@dimen/item_tailing_margin"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:contentDescription="@string/more"
+                        android:focusable="true"
+                        android:padding="@dimen/toolbar_image_action_padding"
+                        android:src="@drawable/ic_baseline_more_vert" />
+                </FrameLayout>
+            </LinearLayout>
 
             <View
                 android:id="@+id/elevation_view"
