@@ -1,19 +1,20 @@
 package com.github.kr328.clash.design.adapter
 
 import android.content.Context
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.design.databinding.AdapterProfileBinding
 import com.github.kr328.clash.design.model.ProfilePageState
 import com.github.kr328.clash.design.model.ProxyPageState
 import com.github.kr328.clash.design.ui.ObservableCurrentTime
-import com.github.kr328.clash.design.util.layoutInflater
+import com.github.kr328.clash.design.util.*
 import com.github.kr328.clash.service.model.Profile
 
 class ProfileAdapter(
     private val context: Context,
     private val onClicked: (Profile) -> Unit,
-    private val onMenuClicked: (Profile) -> Unit,
+    private val onMenuClicked: (View, Profile) -> Unit,
 ) : RecyclerView.Adapter<ProfileAdapter.Holder>() {
     class Holder(val binding: AdapterProfileBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -45,8 +46,24 @@ class ProfileAdapter(
         binding.setClicked {
             onClicked(current)
         }
-        binding.setMenu {
-            onMenuClicked(current)
+        binding.setMenu { view ->
+            onMenuClicked(view, current)
+        }
+        
+        // 设置进度条颜色
+        if (current.total > 1) {
+            val percentage = current.getProfileUsagePercentage()
+            val color = when {
+                percentage >= 90 -> 0xFFE53935.toInt() // Red
+                percentage >= 70 -> 0xFFFFC107.toInt() // Amber
+                else -> 0xFF4CAF50.toInt() // Green
+            }
+            binding.progressBar.progressTintList = android.content.res.ColorStateList.valueOf(color)
+        }
+        
+        // 设置过期文本颜色
+        if (current.expire > 0 && current.expire < System.currentTimeMillis()) {
+            binding.expireText.setTextColor(0xFFE53935.toInt())
         }
     }
 

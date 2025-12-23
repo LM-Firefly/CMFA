@@ -24,6 +24,7 @@
     <dimen name="bottom_sheet_background_padding_top">10dp</dimen>
     <dimen name="bottom_sheet_header_height">5dp</dimen>
     <dimen name="bottom_sheet_menu_items_padding">5dp</dimen>
+    <dimen name="dialog_menu_item_padding">12dp</dimen>
 
     <!-- Large Item -->
     <dimen name="large_item_padding_vertical">15dp</dimen>
@@ -58,7 +59,6 @@
 
     <!-- Main Design -->
     <dimen name="main_card_margin_vertical">5dp</dimen>
-    <dimen name="main_label_margin_vertical">2dp</dimen>
     <dimen name="main_padding_horizontal">30dp</dimen>
     <dimen name="main_logo_size">50dp</dimen>
     <dimen name="main_top_banner_height">90dp</dimen>
@@ -73,6 +73,7 @@
     <dimen name="proxy_text_size_grid3">11sp</dimen>
     <dimen name="proxy_card_radius">5dp</dimen>
     <dimen name="proxy_card_offset">0dp</dimen>
+    <dimen name="groups_menu_card_radius">16dp</dimen>
 
     <!-- Properties Design -->
     <dimen name="properties_element_margin_vertical">2.5dp</dimen>

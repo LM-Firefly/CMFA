@@ -56,13 +56,15 @@
                 </RelativeLayout>
             </com.github.kr328.clash.design.view.ActivityBarLayout>
 
-            <com.github.kr328.clash.design.view.ActionLabel
+            <include
+                layout="@layout/component_action_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/item_header_margin"
                 android:onClick="@{() -> self.requests.offer(Request.StartLogcat.INSTANCE)}"
-                app:icon="@drawable/ic_baseline_adb"
-                app:subtext="@string/tap_to_start"
-                app:text="@string/clash_logcat" />
+                bind:icon="@{@drawable/ic_baseline_adb}"
+                bind:subtext="@{@string/tap_to_start}"
+                bind:text="@{@string/clash_logcat}" />
 
             <View
                 android:layout_width="match_parent"

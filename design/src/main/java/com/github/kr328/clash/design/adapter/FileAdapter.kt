@@ -2,6 +2,7 @@ package com.github.kr328.clash.design.adapter
 
 import android.content.Context
 import android.view.ViewGroup
+import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.design.databinding.AdapterFileBinding
 import com.github.kr328.clash.design.model.File
@@ -11,7 +12,7 @@ import com.github.kr328.clash.design.util.layoutInflater
 class FileAdapter(
     private val context: Context,
     private val open: (File) -> Unit,
-    private val more: (File) -> Unit,
+    private val more: (View, File) -> Unit,
 ) : RecyclerView.Adapter<FileAdapter.Holder>() {
     class Holder(val binding: AdapterFileBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -41,8 +42,8 @@ class FileAdapter(
                 open(current)
             }
 
-            setMore {
-                more(current)
+            setMore { view ->
+                more(view, current)
             }
         }
     }

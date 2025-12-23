@@ -5,10 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.core.model.Provider
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.AdapterProviderBinding
 import com.github.kr328.clash.design.model.ProviderState
 import com.github.kr328.clash.design.ui.ObservableCurrentTime
-import com.github.kr328.clash.design.util.layoutInflater
+import com.github.kr328.clash.design.util.*
 
 class ProviderAdapter(
     private val context: Context,
@@ -33,10 +34,11 @@ class ProviderAdapter(
         notifyItemChanged(index)
     }
 
-    fun notifyChanged(index: Int) {
+    fun notifyChanged(index: Int, provider: Provider) {
         states[index].apply {
+            this.provider = provider
             updating = false
-            updatedAt = System.currentTimeMillis()
+            updatedAt = provider.updatedAt
         }
 
         notifyItemChanged(index)
@@ -57,15 +59,30 @@ class ProviderAdapter(
         holder.binding.state = state
         if (state.provider.vehicleType == Provider.VehicleType.Inline) {
             holder.binding.endView.visibility = View.GONE
-            holder.binding.elapsedView.visibility = View.GONE
-            holder.binding.divider.visibility = View.GONE
         } else {
             holder.binding.endView.visibility = View.VISIBLE
-            holder.binding.elapsedView.visibility = View.VISIBLE
             holder.binding.update = View.OnClickListener {
                 state.updating = true
                 requestUpdate(position, state.provider)
             }
+        }
+        
+        // 设置进度条颜色
+        state.provider.subscriptionInfo?.let { info ->
+            if (info.total > 0) {
+                val percentage = state.provider.getUsagePercentage()
+                val color = when {
+                    percentage >= 90 -> 0xFFE53935.toInt() // Red
+                    percentage >= 70 -> 0xFFFFC107.toInt() // Amber
+                    else -> 0xFF4CAF50.toInt() // Green
+                }
+                holder.binding.progressBar.progressTintList = android.content.res.ColorStateList.valueOf(color)
+            }
+        }
+        
+        // 设置过期文本颜色
+        if (state.provider.isExpired()) {
+            holder.binding.expireText.setTextColor(0xFFE53935.toInt())
         }
     }
 

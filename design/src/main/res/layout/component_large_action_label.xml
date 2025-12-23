@@ -1,37 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <import type="android.view.View" />
+        <variable
+            name="icon"
+            type="android.graphics.drawable.Drawable" />
+        <variable
+            name="text"
+            type="CharSequence" />
+        <variable
+            name="subtext"
+            type="CharSequence" />
+    </data>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="center_vertical"
+        android:minHeight="@dimen/large_action_card_min_height"
         android:orientation="horizontal"
-        android:paddingVertical="@dimen/large_item_padding_vertical">
+        android:gravity="center_vertical"
+        android:paddingVertical="@dimen/large_item_padding_vertical"
+        android:paddingHorizontal="20dp">
 
-        <View
-            android:id="@+id/icon_view"
-            android:layout_width="@dimen/large_item_header_component_size"
-            android:layout_height="@dimen/large_item_header_component_size"
-            android:layout_marginHorizontal="@dimen/large_item_header_margin_horizontal" />
+            <View
+                android:id="@+id/icon_view"
+                android:layout_width="@dimen/large_item_header_component_size"
+                android:layout_height="@dimen/large_item_header_component_size"
+                android:layout_marginHorizontal="@dimen/large_item_header_margin_horizontal"
+                android:background="@{icon}" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/large_item_tailing_margin_horizontal"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/text_view"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
+                android:orientation="vertical"
+                android:layout_marginEnd="@dimen/large_item_tailing_margin_horizontal">
 
-            <TextView
-                android:id="@+id/subtext_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/large_item_text_margin"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/title_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    android:textColor="?attr/colorOnSurface"
+                    android:text="@{text}" />
+
+                <TextView
+                    android:id="@+id/subtext_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/large_item_text_margin"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
+                    android:textColor="?attr/colorOnSurface"
+                    android:alpha="0.8"
+                    android:text="@{subtext}"
+                    android:visibility="@{subtext == null ? View.GONE : View.VISIBLE}" />
+            </LinearLayout>
     </LinearLayout>
 </layout>

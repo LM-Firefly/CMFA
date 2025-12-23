@@ -4,59 +4,44 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.widget.FrameLayout
 import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.ComponentLargeActionLabelBinding
+import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
-import com.github.kr328.clash.design.util.resolveClickableAttrs
+import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.selectableItemBackground
+import com.google.android.material.card.MaterialCardView
 
 class LargeActionLabel @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
     @AttrRes defStyleAttr: Int = 0,
     @StyleRes defStyleRes: Int = 0
-) : FrameLayout(context, attributeSet, defStyleAttr, defStyleRes) {
+) : MaterialCardView(context, attributeSet, defStyleAttr) {
     private val binding = ComponentLargeActionLabelBinding
         .inflate(context.layoutInflater, this, true)
 
     var icon: Drawable?
-        get() = binding.iconView.background
+        get() = binding.icon
         set(value) {
-            binding.iconView.background = value
+            binding.icon = value
         }
 
     var text: CharSequence?
-        get() = binding.textView.text
+        get() = binding.text
         set(value) {
-            binding.textView.text = value
+            binding.text = value
         }
 
     var subtext: CharSequence?
-        get() = binding.subtextView.text
+        get() = binding.subtext
         set(value) {
-            binding.subtextView.text = value
-
-            if (value == null) {
-                binding.subtextView.visibility = View.GONE
-            } else {
-                binding.subtextView.visibility = View.VISIBLE
-            }
+            binding.subtext = value
         }
 
     init {
-        context.resolveClickableAttrs(
-            attributeSet,
-            defStyleAttr,
-            defStyleRes
-        ) {
-            isFocusable = focusable(true)
-            isClickable = clickable(true)
-            background = background() ?: context.selectableItemBackground
-        }
-
         context.theme.obtainStyledAttributes(
             attributeSet,
             R.styleable.LargeActionLabel,
@@ -71,5 +56,13 @@ class LargeActionLabel @JvmOverloads constructor(
                 recycle()
             }
         }
+
+        isClickable = true
+        isFocusable = true
+        foreground = context.selectableItemBackground
+        minimumHeight = context.getPixels(R.dimen.large_action_card_min_height)
+        radius = context.getPixels(R.dimen.large_action_card_radius).toFloat()
+        cardElevation = context.getPixels(R.dimen.large_action_card_elevation).toFloat()
+        setCardBackgroundColor(context.resolveThemedColor(com.google.android.material.R.attr.colorSurface))
     }
 }

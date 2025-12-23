@@ -25,7 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <com.github.kr328.clash.design.view.LargeActionLabel
+        <include
+            layout="@layout/component_large_action_label"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:onClick="@{() -> master.requestImport(self, file)}"
@@ -34,7 +35,8 @@
             app:icon="@drawable/ic_baseline_get_app"
             app:text="@string/import_" />
 
-        <com.github.kr328.clash.design.view.LargeActionLabel
+        <include
+            layout="@layout/component_large_action_label"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:onClick="@{() -> master.requestExport(self, file)}"
@@ -43,7 +45,8 @@
             app:icon="@drawable/ic_baseline_publish"
             app:text="@string/export" />
 
-        <com.github.kr328.clash.design.view.LargeActionLabel
+        <include
+            layout="@layout/component_large_action_label"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:onClick="@{() -> master.requestRename(self, file)}"
@@ -52,7 +55,8 @@
             app:icon="@drawable/ic_baseline_edit"
             app:text="@string/rename" />
 
-        <com.github.kr328.clash.design.view.LargeActionLabel
+        <include
+            layout="@layout/component_large_action_label"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:onClick="@{() -> master.requestDelete(self, file)}"

@@ -1,7 +1,6 @@
 .gradle
 build/
 /app/foss/release
-/app/premium/release
 /captures
 
 # Ignore Gradle GUI config
@@ -24,8 +23,7 @@ gradle-app.setting
 !/core/src/main/golang/.idea/codeStyles
 /core/src/foss/golang/.idea/*
 !/core/src/foss/golang/.idea/codeStyles
-/core/src/premium/golang/.idea/*
-!/core/src/premium/golang/.idea/codeStyles
+# removed legacy entries
 
 # Ignore builtin geofiles
 app/src/main/assets
@@ -64,3 +62,6 @@ google-services.json
 
 # MacOS
 .DS_Store
+
+# Gradle
+.gradle-jdk24/*

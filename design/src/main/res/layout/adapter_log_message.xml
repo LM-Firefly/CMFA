@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="message"
@@ -7,44 +8,52 @@
         <import type="com.github.kr328.clash.design.util.I18nKt" />
     </data>
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/logcat_padding_horizontal"
-        android:paddingVertical="@dimen/logcat_padding_vertical">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="start|center_vertical"
-                android:text="@{message.level.name()}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                android:textColor="?colorControlActivated" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="start|center_vertical"
+                    android:text="@{message.level.name()}"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="?colorControlActivated" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end|center_vertical"
+                    android:text="@{I18nKt.format(message.time, context, false, true)}"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+                    android:textColor="?colorControlActivated" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end|center_vertical"
-                android:text="@{I18nKt.format(message.time, context, false, true)}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                android:textColor="?colorControlActivated" />
+                android:layout_marginTop="8dp"
+                android:text="@{message.message}"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
         </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/item_text_margin"
-            android:text="@{message.message}"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

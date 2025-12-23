@@ -78,18 +78,56 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
         }
     }
 
-    private fun showMenu(profile: Profile) {
-        val dialog = AppBottomSheetDialog(context)
+    private fun showMenu(view: View, profile: Profile) {
+        val popupView = DialogProfilesMenuBinding
+            .inflate(context.layoutInflater, null, false)
 
-        val binding = DialogProfilesMenuBinding
-            .inflate(context.layoutInflater, dialog.window?.decorView as ViewGroup?, false)
+        popupView.master = this
+        popupView.profile = profile
 
-        binding.master = this
-        binding.self = dialog
-        binding.profile = profile
+        val popupWindow = android.widget.PopupWindow(
+            popupView.root,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
 
-        dialog.setContentView(binding.root)
-        dialog.show()
+        popupView.self = object : Dialog(context) {
+            override fun dismiss() {
+                popupWindow.dismiss()
+            }
+        }
+
+        popupWindow.elevation = 8f
+        popupWindow.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+
+        // Measure popup and position it so its right edge aligns with anchor's right edge,
+        // clamped to screen bounds to avoid asymmetric clipping.
+        val displayMetrics = context.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+
+        // Measure popup content
+        popupView.root.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
+            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+        )
+
+        val popupWidth = popupView.root.measuredWidth
+
+        val anchorLocation = IntArray(2)
+        view.getLocationOnScreen(anchorLocation)
+        val anchorRight = anchorLocation[0] + view.width
+        val anchorBottom = anchorLocation[1] + view.height
+
+        val margin = context.getPixels(com.github.kr328.clash.design.R.dimen.dialog_menu_item_padding)
+
+        var x = anchorRight - popupWidth
+        x = x.coerceAtLeast(margin)
+        x = x.coerceAtMost(screenWidth - popupWidth - margin)
+
+        val y = anchorBottom
+
+        popupWindow.showAtLocation(binding.root, android.view.Gravity.NO_GRAVITY, x, y)
     }
 
     fun requestUpdateAll() {
