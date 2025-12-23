@@ -9,8 +9,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 // 全局版本号变量，便于同步
-val appVersionName = "2.11.20"
-val appVersionCode = 211020
+val appVersionName = "2.11.21"
+val appVersionCode = 211021
 plugins {
     // 通过 Version Catalog 声明核心插件版本, 避免旧式 buildscript classpath 写法
     alias(libs.plugins.android.application) apply false
