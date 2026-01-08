@@ -53,7 +53,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="@dimen/item_tailing_margin"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
+                        android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
                 </LinearLayout>
 
                 <com.github.kr328.clash.design.view.ActionTextField
@@ -106,26 +106,29 @@
             android:layout_height="wrap_content"
             android:paddingTop="@{self.surface.insets.top}">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingEnd="@dimen/item_tailing_margin">
 
                 <include
+                    android:id="@+id/activity_bar"
                     layout="@layout/common_activity_bar"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_toStartOf="@id/action_layout" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/action_layout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <FrameLayout
                     android:id="@+id/action_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/item_tailing_margin">
+                    android:layout_marginStart="@dimen/item_tailing_margin"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <ProgressBar
                         android:layout_width="@dimen/item_tailing_component_size"
@@ -144,9 +147,10 @@
                         android:onClick="@{() -> self.requestCommit()}"
                         android:padding="@dimen/toolbar_image_action_padding"
                         android:src="@drawable/ic_baseline_save"
+                        android:tint="?attr/colorOnSurfaceVariant"
                         android:visibility="@{processing ? View.GONE : View.VISIBLE}" />
                 </FrameLayout>
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.github.kr328.clash.design.view.ActivityBarLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

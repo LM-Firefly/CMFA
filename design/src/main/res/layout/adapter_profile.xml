@@ -20,6 +20,7 @@
     </data>
 
     <com.google.android.material.card.MaterialCardView
+        style="?attr/materialCardViewElevatedStyle"
         android:id="@+id/root_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,144 +31,138 @@
         android:clickable="true"
         android:focusable="true"
         android:onClick="@{clicked}"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp"
-        app:contentPadding="16dp">
+        app:cardCornerRadius="12dp">
 
-
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:padding="16dp">
 
-            <!-- 标题行 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <RadioButton
+                android:id="@+id/icon_view"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:checked="@{profile.active}"
+                android:clickable="false"
+                android:focusable="false"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/name_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_marginStart="8dp"
+                android:text="@{profile.name}"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/menu_view"
+                app:layout_constraintStart_toEndOf="@+id/icon_view"
+                app:layout_constraintTop_toTopOf="@+id/icon_view" />
 
-                <RadioButton
-                    android:id="@+id/icon_view"
+            <FrameLayout
+                android:id="@+id/menu_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="@{menu}"
+                app:layout_constraintBottom_toBottomOf="@+id/icon_view"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/icon_view">
+
+                <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:checked="@{profile.active}"
-                    android:clickable="false"
-                    android:focusable="false" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="@{profile.name}"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    android:textStyle="bold" />
-
-                <FrameLayout
-                    android:id="@+id/menu_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:onClick="@{menu}">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:padding="4dp"
-                        android:contentDescription="@string/more"
-                        android:src="@drawable/ic_baseline_more_vert" />
-                </FrameLayout>
-            </LinearLayout>
-
-            <!-- 类型和时间信息 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+                    android:padding="4dp"
+                    android:contentDescription="@string/more"
+                    android:src="@drawable/ic_baseline_more_vert"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </FrameLayout>
+            <TextView
+                android:id="@+id/type_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@{profile.pending ? @string/format_type_unsaved(I18nKt.toString(profile.type, context)) : I18nKt.toString(profile.type, context)}"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    android:textColor="?android:attr/textColorSecondary" />
-
-                <TextView
-                    android:id="@+id/elapsed_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@{IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context)}"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    android:textColor="?android:attr/textColorSecondary" />
-                
-                <TextView
-                    android:id="@+id/percentage_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="@{I18nKt.getProfileUsagePercentageText(profile)}"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}" />
-            </LinearLayout>
-
-            <!-- 订阅信息 -->
-            <LinearLayout
-                android:layout_width="match_parent"
+                android:text="@{profile.pending ? @string/format_type_unsaved(I18nKt.toString(profile.type, context)) : I18nKt.toString(profile.type, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintEnd_toStartOf="@+id/elapsed_view"
+                app:layout_constraintStart_toStartOf="@+id/name_view"
+                app:layout_constraintTop_toBottomOf="@+id/name_view" />
+            <TextView
+                android:id="@+id/elapsed_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintBaseline_toBaselineOf="@+id/type_view"
+                app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:id="@+id/percentage_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileUsagePercentageText(profile)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{(profile.total > 1 || profile.expire > 0) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/remaining_traffic" />
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress_bar"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="vertical"
-                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}">
-
-                <!-- 进度条 -->
-                <ProgressBar
-                    android:id="@+id/progress_bar"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:max="200"
-                    android:progress="@{I18nKt.getProfileUsagePercentage(profile)}" />
-
-                <!-- 流量信息 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@{I18nKt.getProfileRemainingTraffic(profile, context)}"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        android:textColor="?android:attr/textColorSecondary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@{I18nKt.getProfileUsedTraffic(profile, context)}"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        android:textColor="?android:attr/textColorSecondary" />
-                </LinearLayout>
-
-                <!-- 过期信息 -->
-                <TextView
-                    android:id="@+id/expire_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@{I18nKt.getProfileExpireInfo(profile, context)}"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:visibility="@{profile.expire > 0 ? View.VISIBLE : View.GONE}" />
-            </LinearLayout>
-        </LinearLayout>
+                android:max="200"
+                android:progress="@{I18nKt.getProfileUsagePercentage(profile)}"
+                app:indicatorColor="?attr/colorPrimary"
+                app:trackColor="?attr/colorSurfaceVariant"
+                app:trackCornerRadius="4dp"
+                app:trackThickness="8dp"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/type_view" />
+            <TextView
+                android:id="@+id/remaining_traffic"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileRemainingTraffic(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toStartOf="@+id/used_traffic"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/progress_bar" />
+            <TextView
+                android:id="@+id/used_traffic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{I18nKt.getProfileUsedTraffic(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@+id/remaining_traffic"
+                app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:id="@+id/expire_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileExpireInfo(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.expire > 0 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@+id/percentage_text"
+                app:layout_constraintEnd_toStartOf="@+id/percentage_text"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 </layout>

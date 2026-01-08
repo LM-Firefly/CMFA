@@ -98,7 +98,7 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
             }
         }
 
-        popupWindow.elevation = 8f
+        popupWindow.elevation = 0f
         popupWindow.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
 
         // Measure popup and position it so its right edge aligns with anchor's right edge,
@@ -120,10 +120,11 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
         val anchorBottom = anchorLocation[1] + view.height
 
         val margin = context.getPixels(com.github.kr328.clash.design.R.dimen.dialog_menu_item_padding)
+        val offset = (24 * context.resources.displayMetrics.density).toInt()
 
-        var x = anchorRight - popupWidth
-        x = x.coerceAtLeast(margin)
-        x = x.coerceAtMost(screenWidth - popupWidth - margin)
+        var x = anchorRight - popupWidth + offset
+        x = x.coerceAtLeast(margin - offset)
+        x = x.coerceAtMost(screenWidth - popupWidth - margin + offset)
 
         val y = anchorBottom
 

@@ -23,6 +23,7 @@ gradle-app.setting
 !/core/src/main/golang/.idea/codeStyles
 /core/src/foss/golang/.idea/*
 !/core/src/foss/golang/.idea/codeStyles
+go_path
 # removed legacy entries
 
 # Ignore builtin geofiles

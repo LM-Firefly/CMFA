@@ -52,6 +52,7 @@ abstract class GoSharedLibWorkAction : WorkAction<GoSharedLibWorkParameters> {
             executable = "go"
             args(
                 "build", "-buildmode=c-shared",
+                "-ldflags", "-extldflags=-Wl,-z,max-page-size=16384",
                 "-tags", params.buildTags.get(),
                 "-trimpath", "-buildvcs=false",
                 "-o", outSo.absolutePath,

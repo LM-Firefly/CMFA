@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="master"
@@ -17,53 +18,50 @@
         <variable
             name="configurationEditable"
             type="boolean" />
-
         <import type="android.view.View" />
     </data>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <include
-            layout="@layout/component_large_action_label"
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:strokeWidth="0dp">
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:onClick="@{() -> master.requestImport(self, file)}"
-            android:padding="@dimen/bottom_sheet_menu_items_padding"
-            android:visibility="@{!file.isDirectory &amp;&amp; (!currentInBase || configurationEditable) ? View.VISIBLE : View.GONE}"
-            app:icon="@drawable/ic_baseline_get_app"
-            app:text="@string/import_" />
-
-        <include
-            layout="@layout/component_large_action_label"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:onClick="@{() -> master.requestExport(self, file)}"
-            android:padding="@dimen/bottom_sheet_menu_items_padding"
-            android:visibility="@{!file.isDirectory &amp;&amp; file.size > 0 ? View.VISIBLE : View.GONE}"
-            app:icon="@drawable/ic_baseline_publish"
-            app:text="@string/export" />
-
-        <include
-            layout="@layout/component_large_action_label"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:onClick="@{() -> master.requestRename(self, file)}"
-            android:padding="@dimen/bottom_sheet_menu_items_padding"
-            android:visibility="@{!currentInBase ? View.VISIBLE : View.GONE}"
-            app:icon="@drawable/ic_baseline_edit"
-            app:text="@string/rename" />
-
-        <include
-            layout="@layout/component_large_action_label"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:onClick="@{() -> master.requestDelete(self, file)}"
-            android:padding="@dimen/bottom_sheet_menu_items_padding"
-            android:theme="@style/ThemeOverlay.ControlColorError"
-            android:visibility="@{!currentInBase ? View.VISIBLE : View.GONE}"
-            app:icon="@drawable/ic_outline_delete"
-            app:text="@string/delete" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <include
+                layout="@layout/component_large_action_label_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{!file.isDirectory &amp;&amp; (!currentInBase || configurationEditable) ? View.VISIBLE : View.GONE}"
+                bind:click="@{() -> master.requestImport(self, file)}"
+                bind:icon="@{@drawable/ic_baseline_get_app}"
+                bind:text="@{@string/import_}" />
+            <include
+                layout="@layout/component_large_action_label_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{!file.isDirectory &amp;&amp; file.size > 0 ? View.VISIBLE : View.GONE}"
+                bind:click="@{() -> master.requestExport(self, file)}"
+                bind:icon="@{@drawable/ic_baseline_publish}"
+                bind:text="@{@string/export}" />
+            <include
+                layout="@layout/component_large_action_label_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{!currentInBase ? View.VISIBLE : View.GONE}"
+                bind:click="@{() -> master.requestRename(self, file)}"
+                bind:icon="@{@drawable/ic_baseline_edit}"
+                bind:text="@{@string/rename}" />
+            <include
+                layout="@layout/component_large_action_label_menu_delete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="@{!currentInBase ? View.VISIBLE : View.GONE}"
+                bind:click="@{() -> master.requestDelete(self, file)}"
+                bind:icon="@{@drawable/ic_outline_delete}"
+                bind:text="@{@string/delete}" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

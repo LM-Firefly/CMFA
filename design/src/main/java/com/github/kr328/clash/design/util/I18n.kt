@@ -134,7 +134,12 @@ fun Provider.getUsagePercentage(): Int {
 fun Provider.getUsagePercentageText(): String {
     val subInfo = subscriptionInfo ?: return ""
     if (subInfo.total <= 0L) return ""
-    return "${getUsagePercentage()}%"
+    val upload = subInfo.upload.toULong()
+    val download = subInfo.download.toULong()
+    val used = upload + download
+    val total = subInfo.total.toULong()
+    val percentage = (used.toDouble() / total.toDouble() * 100)
+    return String.format("%.2f%%", percentage.coerceAtLeast(0.0))
 }
 
 // Profile subscription info helpers
@@ -148,7 +153,10 @@ fun Profile.getProfileUsagePercentage(): Int {
 
 fun Profile.getProfileUsagePercentageText(): String {
     if (total <= 1L) return ""
-    return "${getProfileUsagePercentage()}%"
+    val used = (upload + download).toDouble()
+    val totalDouble = total.toDouble()
+    val percentage = (used / totalDouble * 100)
+    return String.format("%.2f%%", percentage.coerceAtLeast(0.0))
 }
 
 fun Profile.getProfileRemainingTraffic(context: Context): String {
@@ -167,13 +175,10 @@ fun Profile.getProfileUsedTraffic(context: Context): String {
 
 fun Profile.getProfileExpireInfo(context: Context): String {
     if (expire <= 0L) return ""
-    
     val expireDate = Date(expire)
     val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(expireDate)
-    
     val now = System.currentTimeMillis()
     val diff = expire - now
-    
     return if (diff > 0) {
         val days = diff / (1000 * 60 * 60 * 24)
         context.getString(R.string.expire_info_days, dateStr, days)

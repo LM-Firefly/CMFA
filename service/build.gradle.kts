@@ -29,8 +29,8 @@ dependencies {
     implementation(libs.kaidl.runtime)
     implementation(libs.rikkax.multiprocess)
     implementation(platform(libs.okhttp.bom))
-    implementation("com.squareup.okhttp3:okhttp")
-    implementation("com.squareup.okhttp3:logging-interceptor")
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 }
 
 // 在配置阶段追加 KSP 生成目录到所有 sourceSet，避免 afterEvaluate 与变体 API 依赖

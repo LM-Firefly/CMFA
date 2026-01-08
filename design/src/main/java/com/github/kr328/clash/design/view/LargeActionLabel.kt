@@ -1,13 +1,13 @@
 package com.github.kr328.clash.design.view
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
-import android.view.View
 import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
-import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.ComponentLargeActionLabelBinding
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.util.getPixels
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveThemedColor
@@ -27,6 +27,12 @@ class LargeActionLabel @JvmOverloads constructor(
         get() = binding.icon
         set(value) {
             binding.icon = value
+        }
+
+    var iconTint: ColorStateList?
+        get() = binding.iconTint
+        set(value) {
+            binding.iconTint = value
         }
 
     var text: CharSequence?
@@ -50,6 +56,8 @@ class LargeActionLabel @JvmOverloads constructor(
         ).apply {
             try {
                 icon = getDrawable(R.styleable.LargeActionLabel_icon)
+                iconTint = getColorStateList(R.styleable.LargeActionLabel_iconTint)
+                    ?: ColorStateList.valueOf(context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary))
                 text = getString(R.styleable.LargeActionLabel_text)
                 subtext = getString(R.styleable.LargeActionLabel_subtext)
             } finally {

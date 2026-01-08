@@ -26,48 +26,52 @@
         app:cardCornerRadius="16dp"
         app:strokeWidth="0dp">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:minHeight="@dimen/large_action_card_min_height"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
             android:paddingVertical="@dimen/item_padding_vertical"
             android:paddingHorizontal="20dp">
 
-            <View
+            <ImageView
                 android:id="@+id/icon_view"
                 android:layout_width="@dimen/item_header_component_size"
                 android:layout_height="@dimen/item_header_component_size"
-                android:layout_marginHorizontal="@dimen/large_item_header_margin_horizontal"
-                android:background="@{icon}" />
+                android:src="@{icon}"
+                app:tint="?attr/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/title_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginEnd="@dimen/large_item_tailing_margin_horizontal">
+                android:layout_marginStart="@dimen/large_item_header_margin_horizontal"
+                android:layout_marginEnd="@dimen/large_item_tailing_margin_horizontal"
+                android:text="@{text}"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                app:layout_constraintBottom_toTopOf="@+id/subtext_view"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/icon_view"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
-                <TextView
-                    android:id="@+id/title_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    android:textSize="20sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:text="@{text}" />
+            <TextView
+                android:id="@+id/subtext_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/item_text_margin"
+                android:text="@{subtext}"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{subtext == null ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/title_view"
+                app:layout_constraintStart_toStartOf="@+id/title_view"
+                app:layout_constraintTop_toBottomOf="@+id/title_view" />
 
-                <TextView
-                    android:id="@+id/subtext_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/item_text_margin"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                    android:textColor="?attr/colorOnSurface"
-                    android:alpha="0.8"
-                    android:text="@{subtext}"
-                    android:visibility="@{subtext == null ? View.GONE : View.VISIBLE}" />
-            </LinearLayout>
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 </layout>
