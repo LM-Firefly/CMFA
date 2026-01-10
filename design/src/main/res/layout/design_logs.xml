@@ -25,44 +25,50 @@
                 android:layout_height="wrap_content"
                 android:paddingTop="@{self.surface.insets.top}">
 
-                <RelativeLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingEnd="@dimen/item_tailing_margin">
 
                     <include
+                        android:id="@+id/activity_bar"
                         layout="@layout/common_activity_bar"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@id/delete_view" />
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/delete_view"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <ImageView
                         android:id="@+id/delete_view"
                         android:layout_width="@dimen/item_tailing_component_size"
                         android:layout_height="@dimen/item_tailing_component_size"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
                         android:layout_gravity="end|center_vertical"
                         android:layout_marginStart="@dimen/item_tailing_margin"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:clickable="true"
                         android:contentDescription="@string/delete_all_logs"
                         android:focusable="true"
-                        android:onClick="@{() -> self.requests.offer(Request.DeleteAll.INSTANCE)}"
+                        android:onClick="@{() -> self.request(Request.DeleteAll.INSTANCE)}"
                         android:padding="@dimen/toolbar_image_action_padding"
-                        android:src="@drawable/ic_baseline_clear_all" />
-                </RelativeLayout>
+                        android:src="@drawable/ic_baseline_clear_all"
+                        android:tint="?attr/colorOnSurfaceVariant"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </com.github.kr328.clash.design.view.ActivityBarLayout>
 
-            <com.github.kr328.clash.design.view.ActionLabel
+            <include
+                layout="@layout/component_action_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="@{() -> self.requests.offer(Request.StartLogcat.INSTANCE)}"
-                app:icon="@drawable/ic_baseline_adb"
-                app:subtext="@string/tap_to_start"
-                app:text="@string/clash_logcat" />
+                android:layout_marginHorizontal="@dimen/item_header_margin"
+                android:onClick="@{() -> self.request(Request.StartLogcat.INSTANCE)}"
+                bind:icon="@{@drawable/ic_baseline_adb}"
+                bind:subtext="@{@string/tap_to_start}"
+                bind:text="@{@string/clash_logcat}" />
 
             <View
                 android:layout_width="match_parent"

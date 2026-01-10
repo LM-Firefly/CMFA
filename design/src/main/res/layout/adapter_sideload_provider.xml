@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="appInfo"
@@ -11,59 +12,69 @@
         <import type="android.view.View" />
     </data>
 
-    <RelativeLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:minHeight="@dimen/item_min_height"
-        android:paddingVertical="@dimen/item_padding_vertical">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp">
 
-        <View
-            android:id="@+id/icon_view"
-            android:layout_width="@dimen/item_header_component_size"
-            android:layout_height="@dimen/item_header_component_size"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:background="@{appInfo.icon}" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/selected_view"
-            android:layout_toEndOf="@id/icon_view"
-            android:orientation="vertical">
+            android:padding="16dp">
+
+            <View
+                android:id="@+id/icon_view"
+                android:layout_width="@dimen/item_header_component_size"
+                android:layout_height="@dimen/item_header_component_size"
+                android:background="@{appInfo.icon}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/label_view"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:text="@{appInfo.label}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                app:layout_constraintBottom_toTopOf="@+id/package_name_view"
+                app:layout_constraintEnd_toStartOf="@+id/selected_view"
+                app:layout_constraintStart_toEndOf="@+id/icon_view"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
                 android:id="@+id/package_name_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{appInfo.packageName}"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{appInfo.packageName.length() == 0 ? View.GONE : View.VISIBLE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/selected_view"
+                app:layout_constraintStart_toStartOf="@+id/label_view"
+                app:layout_constraintTop_toBottomOf="@+id/label_view" />
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/selected_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/item_text_margin"
-                android:text="@{appInfo.packageName}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                android:visibility="@{appInfo.packageName.length() == 0 ? View.GONE : View.VISIBLE}" />
-        </LinearLayout>
+                android:checked="@{selected}"
+                android:clickable="false"
+                android:focusable="false"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/selected_view"
-            android:layout_width="@dimen/item_tailing_component_size"
-            android:layout_height="@dimen/item_tailing_component_size"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginHorizontal="@dimen/item_tailing_margin"
-            android:checked="@{selected}"
-            android:clickable="false"
-            android:focusable="false"
-            android:gravity="center" />
-    </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>
