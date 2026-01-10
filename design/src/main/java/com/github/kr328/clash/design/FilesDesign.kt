@@ -3,9 +3,11 @@ package com.github.kr328.clash.design
 import android.app.Dialog
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
 import com.github.kr328.clash.design.adapter.FileAdapter
 import com.github.kr328.clash.design.databinding.DesignFilesBinding
 import com.github.kr328.clash.design.databinding.DialogFilesMenuBinding
+import com.github.kr328.clash.design.databinding.DialogFilesPopupBinding
 import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
 import com.github.kr328.clash.design.dialog.requestModelTextInput
 import com.github.kr328.clash.design.model.File
@@ -106,18 +108,43 @@ class FilesDesign(context: Context) : Design<FilesDesign.Request>(context) {
         requests.trySend(Request.ImportFile(null))
     }
 
-    private fun requestMore(file: File) {
-        val dialog = AppBottomSheetDialog(context)
-
-        val binding = DialogFilesMenuBinding.inflate(context.layoutInflater)
-
-        binding.master = this
-        binding.self = dialog
-        binding.file = file
-        binding.currentInBase = this.binding.currentInBaseDir
-        binding.configurationEditable = this.binding.configurationEditable
-
-        dialog.setContentView(binding.root)
-        dialog.show()
+    private fun requestMore(anchor: View, file: File) {
+        val popupView = DialogFilesPopupBinding
+            .inflate(context.layoutInflater, null, false)
+        popupView.master = this
+        popupView.file = file
+        popupView.currentInBase = this.binding.currentInBaseDir
+        popupView.configurationEditable = this.binding.configurationEditable
+        val popupWindow = android.widget.PopupWindow(
+            popupView.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+        popupView.self = object : Dialog(context) {
+            override fun dismiss() {
+                popupWindow.dismiss()
+            }
+        }
+        popupWindow.elevation = 0f
+        popupWindow.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
+        val displayMetrics = context.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        popupView.root.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
+            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
+        )
+        val popupWidth = popupView.root.measuredWidth
+        val anchorLocation = IntArray(2)
+        anchor.getLocationOnScreen(anchorLocation)
+        val anchorRight = anchorLocation[0] + anchor.width
+        val anchorBottom = anchorLocation[1] + anchor.height
+        val margin = context.getPixels(com.github.kr328.clash.design.R.dimen.dialog_menu_item_padding)
+        val offset = (24 * context.resources.displayMetrics.density).toInt()
+        var x = anchorRight - popupWidth + offset
+        x = x.coerceAtLeast(margin - offset)
+        x = x.coerceAtMost(screenWidth - popupWidth - margin + offset)
+        val y = anchorBottom
+        popupWindow.showAtLocation(binding.root, android.view.Gravity.NO_GRAVITY, x, y)
     }
 }

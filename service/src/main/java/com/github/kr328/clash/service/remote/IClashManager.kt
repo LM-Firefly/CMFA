@@ -12,15 +12,12 @@ interface IClashManager {
     fun queryProxyGroup(name: String, proxySort: ProxySort): ProxyGroup
     fun queryConfiguration(): UiConfiguration
     fun queryProviders(): ProviderList
-
     fun patchSelector(group: String, name: String): Boolean
-
+    fun patchForceSelector(group: String, name: String): Boolean
     suspend fun healthCheck(group: String)
     suspend fun updateProvider(type: Provider.Type, name: String)
-
     fun queryOverride(slot: Clash.OverrideSlot): ConfigurationOverride
     fun patchOverride(slot: Clash.OverrideSlot, configuration: ConfigurationOverride)
     fun clearOverride(slot: Clash.OverrideSlot)
-
     fun setLogObserver(observer: ILogObserver?)
 }
