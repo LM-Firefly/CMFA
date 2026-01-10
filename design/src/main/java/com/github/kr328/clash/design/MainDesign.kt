@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design
 
+import android.app.Dialog
 import android.content.Context
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -72,20 +73,60 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
                 this.versionName = versionName
             }
 
-            AlertDialog.Builder(context)
-                .setView(binding.root)
-                .show()
+            Dialog(context).apply {
+                setContentView(binding.root)
+                window?.apply {
+                    setLayout(
+                        (context.resources.displayMetrics.widthPixels * 0.9).toInt(),
+                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    setBackgroundDrawableResource(android.R.color.transparent)
+                }
+                show()
+            }
         }
     }
 
     init {
         binding.self = this
 
-        binding.colorClashStarted = context.resolveThemedColor(com.google.android.material.R.attr.colorPrimary)
+        binding.colorClashStarted = context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary)
         binding.colorClashStopped = context.resolveThemedColor(R.attr.colorClashStopped)
     }
 
     fun request(request: Request) {
         requests.trySend(request)
+    }
+
+    fun onRequestToggleStatus(view: View) {
+        request(Request.ToggleStatus)
+    }
+
+    fun onRequestOpenProxy(view: View) {
+        request(Request.OpenProxy)
+    }
+
+    fun onRequestOpenProfiles(view: View) {
+        request(Request.OpenProfiles)
+    }
+
+    fun onRequestOpenProviders(view: View) {
+        request(Request.OpenProviders)
+    }
+
+    fun onRequestOpenLogs(view: View) {
+        request(Request.OpenLogs)
+    }
+
+    fun onRequestOpenSettings(view: View) {
+        request(Request.OpenSettings)
+    }
+
+    fun onRequestOpenHelp(view: View) {
+        request(Request.OpenHelp)
+    }
+
+    fun onRequestOpenAbout(view: View) {
+        request(Request.OpenAbout)
     }
 }

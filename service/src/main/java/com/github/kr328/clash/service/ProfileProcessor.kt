@@ -16,16 +16,29 @@ import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.processingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
+import java.io.FileNotFoundException
+import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 object ProfileProcessor {
     private val profileLock = Mutex()
     private val processLock = Mutex()
+    suspend fun clone(context: Context, source: UUID, target: UUID) {
+        withContext(NonCancellable) {
+            profileLock.withLock {
+                val s = context.importedDir.resolve(source.toString())
+                val t = context.pendingDir.resolve(target.toString())
+                if (!s.exists())
+                    throw FileNotFoundException("profile $source not found")
+                t.deleteRecursively()
+                s.copyRecursively(t)
+            }
+        }
+    }
 
     suspend fun apply(context: Context, uuid: UUID, callback: IFetchObserver? = null) {
         withContext(NonCancellable) {
@@ -217,5 +230,4 @@ object ProfileProcessor {
             interval != 0L && TimeUnit.MILLISECONDS.toMinutes(interval) < 15 -> throw IllegalArgumentException("Invalid interval")
         }
     }
-
 }
