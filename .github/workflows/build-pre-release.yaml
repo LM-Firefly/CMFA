@@ -5,24 +5,30 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   BuildPreRelease:
+    #    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Checkout submodules
         run: git submodule update --init --recursive --force
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - name: Setup Java (JDK 24)
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: 21
+          java-version: 24
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Setup Go
         uses: actions/setup-go@v6
@@ -30,7 +36,7 @@ jobs:
           go-version: "1.26"
           check-latest: true # Always check for the latest patch release
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cache/go-build
@@ -55,20 +61,22 @@ jobs:
           echo keystore.password="$SIGNING_STORE_PASSWORD" > signing.properties
           echo key.alias="$SIGNING_KEY_ALIAS" >> signing.properties
           echo key.password="$SIGNING_KEY_PASSWORD" >> signing.properties
-            
           echo "cat signing.properties"
           cat signing.properties
 
       - name: Pre-release Build
         if: success()
-        run: ./gradlew --no-daemon app:assembleAlphaRelease
+        run: ./gradlew --no-daemon --no-configuration-cache assembleAlphaRelease --parallel
 
       # Delete old Prerelease-alpha
-      - uses: dev-drprasad/delete-tag-and-release@v1.1
-        with:
-          tag_name: Prerelease-alpha
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          delete_release: true
+      - name: Delete old Prerelease-alpha
+        run: |
+          gh release delete Prerelease-alpha -y || true
+          git fetch --tags || true
+          git push --delete origin Prerelease-alpha || true
+          git tag -d Prerelease-alpha || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tag Repo
         uses: richardsimko/update-tag@v1
@@ -87,4 +95,4 @@ jobs:
           generate_release_notes: true
 
       - name: Release Changelog Builder
-        uses: mikepenz/release-changelog-builder-action@v4
+        uses: mikepenz/release-changelog-builder-action@v6.0.1

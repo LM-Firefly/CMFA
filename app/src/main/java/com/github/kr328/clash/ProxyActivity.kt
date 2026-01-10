@@ -69,26 +69,41 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                                     }
                                 }
                                 val state = states[it.index]
-
                                 state.now = group.now
-
+                                state.fixed = group.fixed
+                                // 修改此处, 允许对Selector、URLTest和Fallback类型的代理组进行选择操作
+                                val selectable = when (group.type) {
+                                    Proxy.Type.Selector -> true
+                                    Proxy.Type.URLTest -> true
+                                    Proxy.Type.Fallback -> true
+                                    else -> false
+                                }
                                 design.updateGroup(
                                     it.index,
                                     group.proxies,
-                                    group.type == Proxy.Type.Selector,
+                                    selectable,
                                     state,
                                     unorderedStates
                                 )
                             }
                         }
                         is ProxyDesign.Request.Select -> {
+                            val currentGroup = names[it.index]
+                            val currentState = states[it.index]
                             withClash {
-                                patchSelector(names[it.index], it.name)
-
-                                states[it.index].now = it.name
+                                // 检查当前选择的节点是否已经是固定的节点，如果是则取消固定
+                                val fixedNode = currentState.fixed
+                                if (fixedNode != null && fixedNode.isNotEmpty() && currentState.now == it.name) {
+                                    // 如果点击的是已经固定的节点，则取消固定
+                                    patchForceSelector(currentGroup, "")
+                                } else {
+                                    // 否则固定选择该节点
+                                    patchForceSelector(currentGroup, it.name)
+                                }
                             }
 
-                            design.requestRedrawVisible()
+                            // 重新加载以获取最新状态
+                            design.requests.send(ProxyDesign.Request.Reload(it.index))
                         }
                         is ProxyDesign.Request.UrlTest -> {
                             launch {

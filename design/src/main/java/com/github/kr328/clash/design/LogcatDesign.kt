@@ -35,6 +35,10 @@ class LogcatDesign(
         }
     }
 
+    fun request(req: Request) {
+        requests.trySend(req)
+    }
+
     suspend fun patchMessages(messages: List<LogMessage>, removed: Int, appended: Int) {
         withContext(Dispatchers.Main) {
             adapter.messages = messages

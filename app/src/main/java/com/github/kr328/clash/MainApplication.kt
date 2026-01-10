@@ -49,13 +49,25 @@ class MainApplication : Application() {
             }
         }
 
-        val geositeFile = File(clashDir, "geosite.dat")
+        // 统一使用核心代码的大小写：GeoSite.dat
+        val geositeFile = File(clashDir, "GeoSite.dat")
+        val legacyLowerCase = File(clashDir, "geosite.dat")
+        // 迁移旧版本：若旧小写文件存在且新版文件不存在，直接重命名
+        if (!geositeFile.exists() && legacyLowerCase.exists()) {
+            legacyLowerCase.renameTo(geositeFile)
+        }
         if (geositeFile.exists() && geositeFile.lastModified() < updateDate) {
             geositeFile.delete()
         }
         if (!geositeFile.exists()) {
+            // 资产同样以 GeoSite.dat 打包（Gradle 下载时已改名）
             FileOutputStream(geositeFile).use {
-                assets.open("geosite.dat").copyTo(it)
+                try {
+                    assets.open("GeoSite.dat").copyTo(it)
+                } catch (e: Exception) {
+                    // 回退：兼容老 APK 里仍然是小写命名的情况
+                    assets.open("geosite.dat").copyTo(it)
+                }
             }
         }
 
