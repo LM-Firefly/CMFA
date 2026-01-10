@@ -1,120 +1,97 @@
 package com.github.kr328.clash.design.component
 
 import android.content.Context
-import android.view.MenuItem
+import android.view.LayoutInflater
 import android.view.View
-import androidx.appcompat.widget.PopupMenu
 import com.github.kr328.clash.core.model.ProxySort
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.design.ProxyDesign
 import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.databinding.DialogProxyMenuBinding
+import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
 import com.github.kr328.clash.design.store.UiStore
 import kotlinx.coroutines.channels.Channel
 
 class ProxyMenu(
-    context: Context,
-    menuView: View,
-    mode: TunnelState.Mode?,
+    private val context: Context,
+    view: View,
+    private val mode: TunnelState.Mode?,
     private val uiStore: UiStore,
     private val requests: Channel<ProxyDesign.Request>,
     private val updateConfig: () -> Unit,
-) : PopupMenu.OnMenuItemClickListener {
-    private val menu = PopupMenu(context, menuView)
-
+) {
     fun show() {
-        menu.show()
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        item.isChecked = !item.isChecked
-
-        when (item.itemId) {
-            R.id.not_selectable -> {
-                uiStore.proxyExcludeNotSelectable = item.isChecked
-
-                requests.trySend(ProxyDesign.Request.ReLaunch)
-            }
-            R.id.single -> {
-                uiStore.proxyLine = 1
-
-                updateConfig()
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.doubles -> {
-                uiStore.proxyLine = 2
-
-                updateConfig()
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.multiple -> {
-                uiStore.proxyLine = 3
-
-                updateConfig()
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.default_ -> {
-                uiStore.proxySort = ProxySort.Default
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.name -> {
-                uiStore.proxySort = ProxySort.Title
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.delay -> {
-                uiStore.proxySort = ProxySort.Delay
-
-                requests.trySend(ProxyDesign.Request.ReloadAll)
-            }
-            R.id.dont_modify -> {
-                requests.trySend(ProxyDesign.Request.PatchMode(null))
-            }
-            R.id.direct_mode -> {
-                requests.trySend(ProxyDesign.Request.PatchMode(TunnelState.Mode.Direct))
-            }
-            R.id.global_mode -> {
-                requests.trySend(ProxyDesign.Request.PatchMode(TunnelState.Mode.Global))
-            }
-            R.id.rule_mode -> {
-                requests.trySend(ProxyDesign.Request.PatchMode(TunnelState.Mode.Rule))
-            }
-            else -> return false
+        val binding = DialogProxyMenuBinding.inflate(LayoutInflater.from(context))
+        val dialog = AppBottomSheetDialog(context)
+        dialog.setContentView(binding.root)
+        binding.filterSwitch.isChecked = uiStore.proxyExcludeNotSelectable
+        when (mode) {
+            null -> binding.modeDefault.isChecked = true
+            TunnelState.Mode.Direct -> binding.modeDirect.isChecked = true
+            TunnelState.Mode.Global -> binding.modeGlobal.isChecked = true
+            TunnelState.Mode.Rule -> binding.modeRule.isChecked = true
+            else -> {}
         }
-
-        return true
-    }
-
-    init {
-        menu.menuInflater.inflate(R.menu.menu_proxy, menu.menu)
-
-        menu.menu.apply {
-            findItem(R.id.not_selectable).isChecked = uiStore.proxyExcludeNotSelectable
-
-            when (uiStore.proxyLine){
-                1 -> findItem(R.id.single).isChecked = true
-                2 -> findItem(R.id.doubles).isChecked = true
-                3 -> findItem(R.id.multiple).isChecked = true
+        when (uiStore.proxyLine) {
+            1 -> binding.layoutSingle.isChecked = true
+            2 -> binding.layoutDouble.isChecked = true
+            3 -> binding.layoutMultiple.isChecked = true
+        }
+        when (uiStore.proxySort) {
+            ProxySort.Default -> binding.sortDefault.isChecked = true
+            ProxySort.Title -> binding.sortName.isChecked = true
+            ProxySort.Delay -> binding.sortDelay.isChecked = true
+        }
+        binding.filterContainer.setOnClickListener {
+            binding.filterSwitch.isChecked = !binding.filterSwitch.isChecked
+        }
+        binding.filterSwitch.setOnCheckedChangeListener { _, isChecked ->
+            uiStore.proxyExcludeNotSelectable = isChecked
+            requests.trySend(ProxyDesign.Request.ReLaunch)
+        }
+        binding.modeGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            val newMode = when (checkedId) {
+                R.id.mode_default -> null
+                R.id.mode_direct -> TunnelState.Mode.Direct
+                R.id.mode_global -> TunnelState.Mode.Global
+                R.id.mode_rule -> TunnelState.Mode.Rule
+                else -> return@setOnCheckedStateChangeListener
             }
-
-            when (uiStore.proxySort) {
-                ProxySort.Default -> findItem(R.id.default_).isChecked = true
-                ProxySort.Title -> findItem(R.id.name).isChecked = true
-                ProxySort.Delay -> findItem(R.id.delay).isChecked = true
-            }
-
-            when (mode) {
-                null -> findItem(R.id.dont_modify).isChecked = true
-                TunnelState.Mode.Direct -> findItem(R.id.direct_mode).isChecked = true
-                TunnelState.Mode.Global -> findItem(R.id.global_mode).isChecked = true
-                TunnelState.Mode.Rule -> findItem(R.id.rule_mode).isChecked = true
-                else -> {}
+            if (newMode != mode) {
+                requests.trySend(ProxyDesign.Request.PatchMode(newMode))
+                dialog.dismiss()
             }
         }
-
-        menu.setOnMenuItemClickListener(this)
+        binding.layoutGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            val lines = when (checkedId) {
+                R.id.layout_single -> 1
+                R.id.layout_double -> 2
+                R.id.layout_multiple -> 3
+                else -> return@setOnCheckedStateChangeListener
+            }
+            if (uiStore.proxyLine != lines) {
+                uiStore.proxyLine = lines
+                updateConfig()
+                requests.trySend(ProxyDesign.Request.ReloadAll)
+                dialog.dismiss()
+            }
+        }
+        binding.sortGroup.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            val sort = when (checkedId) {
+                R.id.sort_default -> ProxySort.Default
+                R.id.sort_name -> ProxySort.Title
+                R.id.sort_delay -> ProxySort.Delay
+                else -> return@setOnCheckedStateChangeListener
+            }
+            if (uiStore.proxySort != sort) {
+                uiStore.proxySort = sort
+                requests.trySend(ProxyDesign.Request.ReloadAll)
+                dialog.dismiss()
+            }
+        }
+        dialog.show()
     }
 }

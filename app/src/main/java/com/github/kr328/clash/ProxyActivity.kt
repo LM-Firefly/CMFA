@@ -69,26 +69,36 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                                     }
                                 }
                                 val state = states[it.index]
-
                                 state.now = group.now
-
+                                state.fixed = group.fixed
+                                val selectable = when (group.type) {
+                                    Proxy.Type.Selector -> true
+                                    Proxy.Type.URLTest -> true
+                                    Proxy.Type.Fallback -> true
+                                    else -> false
+                                }
                                 design.updateGroup(
                                     it.index,
                                     group.proxies,
-                                    group.type == Proxy.Type.Selector,
+                                    selectable,
                                     state,
                                     unorderedStates
                                 )
                             }
                         }
                         is ProxyDesign.Request.Select -> {
+                            val currentGroup = names[it.index]
+                            val currentState = states[it.index]
                             withClash {
-                                patchSelector(names[it.index], it.name)
-
-                                states[it.index].now = it.name
+                                val fixedNode = currentState.fixed
+                                if (fixedNode != null && fixedNode.isNotEmpty() && currentState.now == it.name) {
+                                    patchForceSelector(currentGroup, "")
+                                } else {
+                                    patchForceSelector(currentGroup, it.name)
+                                }
                             }
 
-                            design.requestRedrawVisible()
+                            design.requests.send(ProxyDesign.Request.Reload(it.index))
                         }
                         is ProxyDesign.Request.UrlTest -> {
                             launch {
