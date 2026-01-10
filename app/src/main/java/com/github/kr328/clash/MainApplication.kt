@@ -110,13 +110,21 @@ class MainApplication : Application() {
             }
         }
 
-        val geositeFile = File(clashDir, "geosite.dat")
+        val geositeFile = File(clashDir, "GeoSite.dat")
+        val legacyLowerCase = File(clashDir, "geosite.dat")
+        if (!geositeFile.exists() && legacyLowerCase.exists()) {
+            legacyLowerCase.renameTo(geositeFile)
+        }
         if (geositeFile.exists() && geositeFile.lastModified() < updateDate) {
             geositeFile.delete()
         }
         if (!geositeFile.exists()) {
             FileOutputStream(geositeFile).use {
-                assets.open("geosite.dat").copyTo(it)
+                try {
+                    assets.open("GeoSite.dat").copyTo(it)
+                } catch (e: Exception) {
+                    assets.open("geosite.dat").copyTo(it)
+                }
             }
         }
 
