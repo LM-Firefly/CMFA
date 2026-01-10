@@ -58,6 +58,19 @@ class ClashManager(private val context: Context) : IClashManager,
         }
     }
 
+    override fun patchForceSelector(group: String, name: String): Boolean {
+        return Clash.patchForceSelector(group, name).also {
+            val current = store.activeProfile ?: return@also
+            if (it) {
+                if (name.isNotBlank()) {
+                    SelectionDao().setSelected(Selection(current, group, name))
+                } else {
+                    SelectionDao().removeSelected(current, group)
+                }
+            }
+        }
+    }
+
     override fun patchOverride(slot: Clash.OverrideSlot, configuration: ConfigurationOverride) {
         Clash.patchOverride(slot, configuration)
 
