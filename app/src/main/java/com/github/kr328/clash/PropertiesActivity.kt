@@ -69,15 +69,17 @@ class PropertiesActivity : BaseActivity<PropertiesDesign>() {
         }
     }
 
-    override fun onBackPressed() {
-        design?.apply {
+    init {
+        registerBackHandler {
+            val d = design ?: return@registerBackHandler false
+            if (d.progressing) return@registerBackHandler true
             launch {
-                if (!progressing) {
-                    if (original == profile || requestExitWithoutSaving())
-                        finish()
+                if (original == d.profile || d.requestExitWithoutSaving()) {
+                    finish()
                 }
             }
-        } ?: return super.onBackPressed()
+            true
+        }
     }
 
     private suspend fun PropertiesDesign.verifyAndCommit() {
