@@ -2,6 +2,7 @@ package com.github.kr328.clash
 
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.common.util.ticker
+import com.github.kr328.clash.core.model.Provider
 import com.github.kr328.clash.design.ProvidersDesign
 import com.github.kr328.clash.design.util.showExceptionToast
 import com.github.kr328.clash.util.withClash
@@ -14,7 +15,8 @@ import com.github.kr328.clash.design.R
 class ProvidersActivity : BaseActivity<ProvidersDesign>() {
     override suspend fun main() {
         val providers = withClash { queryProviders().sorted() }
-        val design = ProvidersDesign(this, providers)
+        val mergedProviders = providers.map { mergeProviderInfo(it) }
+        val design = ProvidersDesign(this, mergedProviders)
 
         setContentDesign(design)
 
@@ -45,7 +47,15 @@ class ProvidersActivity : BaseActivity<ProvidersDesign>() {
                                         updateProvider(it.provider.type, it.provider.name)
                                     }
 
-                                    design.notifyChanged(it.index)
+                                    val freshList = withClash { queryProviders() }
+                                    val freshProvider = freshList.find { p ->
+                                        p.name == it.provider.name && p.type == it.provider.type
+                                    } ?: it.provider
+
+                                    val updatedProvider = updateProviderInfo(freshProvider)
+
+                                    val finalProvider = updatedProvider.copy(updatedAt = System.currentTimeMillis())
+                                    design.notifyChanged(it.index, finalProvider)
                                 } catch (e: Exception) {
                                     design.showExceptionToast(
                                         getString(
@@ -68,5 +78,14 @@ class ProvidersActivity : BaseActivity<ProvidersDesign>() {
                 }
             }
         }
+    }
+
+    private fun mergeProviderInfo(provider: Provider): Provider {
+        return provider
+    }
+
+    private suspend fun updateProviderInfo(provider: Provider): Provider {
+        // Core provides subscription info directly; no local update needed
+        return provider
     }
 }
