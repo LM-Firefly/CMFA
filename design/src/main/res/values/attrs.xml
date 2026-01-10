@@ -10,6 +10,7 @@
     <attr name="text" format="string" />
     <attr name="subtext" format="string" />
     <attr name="icon" format="reference" />
+    <attr name="iconTint" format="color" />
     <attr name="color" format="color" />
     <attr name="placeholder" format="string" />
     <attr name="title" format="string" />
@@ -24,6 +25,7 @@
         <attr name="text" />
         <attr name="subtext" />
         <attr name="icon" />
+        <attr name="iconTint" />
     </declare-styleable>
 
     <declare-styleable name="ActionLabel">

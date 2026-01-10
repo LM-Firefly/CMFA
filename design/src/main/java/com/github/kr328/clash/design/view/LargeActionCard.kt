@@ -18,21 +18,21 @@ class LargeActionCard @JvmOverloads constructor(
         .inflate(context.layoutInflater, this, true)
 
     var text: CharSequence?
-        get() = binding.textView.text
+        get() = binding.text
         set(value) {
-            binding.textView.text = value
+            binding.text = value
         }
 
     var subtext: CharSequence?
-        get() = binding.subtextView.text
+        get() = binding.subtext
         set(value) {
-            binding.subtextView.text = value
+            binding.subtext = value
         }
 
     var icon: Drawable?
-        get() = binding.iconView.background
+        get() = binding.icon
         set(value) {
-            binding.iconView.background = value
+            binding.icon = value
         }
 
     init {

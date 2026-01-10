@@ -14,6 +14,12 @@ data class Proxy(
     val delay: Int,
     var isGroup: Boolean,
 ) : Parcelable {
+    object Type {
+        const val Selector = "Selector"
+        const val URLTest = "URLTest"
+        const val Fallback = "Fallback"
+        const val Unknown = "Unknown"
+    }
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         Parcelizer.encodeToParcel(serializer(), parcel, this)
     }

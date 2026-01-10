@@ -122,8 +122,12 @@ class FilesActivity : BaseActivity<FilesDesign>() {
         }
     }
 
-    override fun onBackPressed() {
-        design?.requests?.trySend(FilesDesign.Request.PopStack)
+    init {
+        registerBackHandler {
+            val d = design ?: return@registerBackHandler false
+            d.requests.trySend(FilesDesign.Request.PopStack)
+            true
+        }
     }
 
     private suspend fun FilesDesign.fetch(client: FilesClient, stack: Stack<String>, root: String) {

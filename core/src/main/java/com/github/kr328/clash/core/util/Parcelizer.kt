@@ -89,7 +89,7 @@ object Parcelizer {
         }
 
         @ExperimentalSerializationApi
-        override fun decodeInline(inlineDescriptor: SerialDescriptor): Decoder {
+        override fun decodeInline(descriptor: SerialDescriptor): Decoder {
             return this
         }
 
@@ -215,7 +215,7 @@ object Parcelizer {
         }
 
         @ExperimentalSerializationApi
-        override fun encodeInline(inlineDescriptor: SerialDescriptor): Encoder {
+        override fun encodeInline(descriptor: SerialDescriptor): Encoder {
             return this
         }
 

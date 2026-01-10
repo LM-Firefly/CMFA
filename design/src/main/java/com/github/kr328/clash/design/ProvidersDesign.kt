@@ -37,9 +37,9 @@ class ProvidersDesign(
         }
     }
 
-    suspend fun notifyChanged(index: Int) {
+    suspend fun notifyChanged(index: Int, provider: Provider) {
         withContext(Dispatchers.Main) {
-            adapter.notifyChanged(index)
+            adapter.notifyChanged(index, provider)
         }
     }
 
