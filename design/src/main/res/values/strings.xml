@@ -284,6 +284,12 @@
     <string name="compatible">Compatible</string>
     <string name="format_update_provider_failure">Update %1$s: %2$s</string>
     <string name="update_all">Update All</string>
+    
+    <!-- Provider subscription info -->
+    <string name="remaining_traffic">Remaining: %s</string>
+    <string name="used_traffic">Used: %1$s / %2$s</string>
+    <string name="expire_info_days">%1$s (%2$d days left)</string>
+    <string name="expire_info_expired">%s (Expired)</string>
 
     <string name="close">Close</string>
     <string name="keyword">Keyword</string>
@@ -357,4 +363,14 @@
     <string name="shortcut_start_long">Start Clash service</string>
     <string name="shortcut_stop_short">Stop Clash</string>
     <string name="shortcut_stop_long">Stop Clash service</string>
+
+    <string name="disable_sniffer">Disable Sniffer</string>
+    <string name="port_whitelist">Port Whitelist</string>
+    <string name="script_mode">Script Mode</string>
+    <string name="sideload_geoip">Sideload GEOIP</string>
+    <string name="sideload_geoip_summary">External GEOIP Database</string>
+    <string name="sniff">Sniff</string>
+    <string name="sniffer_config">Load Sniffer From Config</string>
+    <string name="sniffer_override">Override Sniffer Config</string>
+    <string name="sniffing">Sniffer Mode</string>
 </resources>

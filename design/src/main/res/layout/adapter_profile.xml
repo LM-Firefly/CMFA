@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="profile"
@@ -18,124 +19,150 @@
         <import type="com.github.kr328.clash.design.util.IntervalKt" />
     </data>
 
-    <RelativeLayout
-        android:elevation="5dp"
+    <com.google.android.material.card.MaterialCardView
+        style="?attr/materialCardViewElevatedStyle"
         android:id="@+id/root_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="5dp"
-        android:layout_marginHorizontal="@dimen/item_header_margin"
-        android:background="@drawable/bg_b"
+        android:layout_marginStart="@dimen/item_header_margin"
+        android:layout_marginEnd="@dimen/item_header_margin"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:minHeight="@dimen/item_min_height"
-        android:nextFocusRight="@id/menu_view"
-        android:onClick="@{clicked}">
+        android:onClick="@{clicked}"
+        app:cardCornerRadius="12dp">
 
-        <RadioButton
-            android:id="@+id/icon_view"
-            android:layout_width="@dimen/item_header_component_size"
-            android:layout_height="@dimen/item_header_component_size"
-            android:layout_centerVertical="true"
-            android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:checked="@{profile.active}"
-            android:clickable="false"
-            android:focusable="false"
-            android:gravity="center" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/elapsed_view"
-            android:layout_toEndOf="@id/icon_view"
-            android:orientation="vertical"
-            android:paddingVertical="@dimen/item_padding_vertical">
+            android:padding="16dp">
+
+            <RadioButton
+                android:id="@+id/icon_view"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:checked="@{profile.active}"
+                android:clickable="false"
+                android:focusable="false"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/name_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
                 android:text="@{profile.name}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@+id/menu_view"
+                app:layout_constraintStart_toEndOf="@+id/icon_view"
+                app:layout_constraintTop_toTopOf="@+id/icon_view" />
 
-            <TextView
+            <FrameLayout
+                android:id="@+id/menu_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/item_text_margin"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="@{menu}"
+                app:layout_constraintBottom_toBottomOf="@+id/icon_view"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/icon_view">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="4dp"
+                    android:contentDescription="@string/more"
+                    android:src="@drawable/ic_baseline_more_vert"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </FrameLayout>
+            <TextView
+                android:id="@+id/type_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@{profile.pending ? @string/format_type_unsaved(I18nKt.toString(profile.type, context)) : I18nKt.toString(profile.type, context)}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                >
-
-                <TextView
-                    android:textSize="12sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="@{profile.download &lt;2 ? View.GONE : View.VISIBLE}"
-                    android:text='@{profile.download >1  ?I18nKt.toBytesString(profile.download+profile.upload)+"/" :""}'
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
-
-                <TextView
-                    android:textSize="12sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:visibility="@{profile.download &lt;2 ? View.GONE : View.VISIBLE}"
-                    android:text='@{profile.total >1 ?I18nKt.toBytesString(profile.total) : ""}'
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
-            </LinearLayout>
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintEnd_toStartOf="@+id/elapsed_view"
+                app:layout_constraintStart_toStartOf="@+id/name_view"
+                app:layout_constraintTop_toBottomOf="@+id/name_view" />
             <TextView
-                android:textSize="12sp"
+                android:id="@+id/elapsed_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="@{profile.expire==0 ? View.GONE : View.VISIBLE}"
-                android:text='@{profile.expire>0 ? I18nKt.toDateStr(profile.expire):""}'
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
-            <ProgressBar
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="match_parent"
+                android:text="@{IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintBaseline_toBaselineOf="@+id/type_view"
+                app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:id="@+id/percentage_text"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:max="1000"
-                android:visibility="@{profile.total &lt; 2 ? View.GONE : View.VISIBLE}"
-                android:progress="@{profile.total>1 ?I18nKt.toProgress ((profile.download+profile.upload)/(profile.total/1000)) :0}"
-                />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/elapsed_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/item_midden_margin"
-            android:layout_toStartOf="@id/menu_view"
-            android:text="@{IntervalKt.elapsedIntervalString(currentTime.value - profile.updatedAt, context)}"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Tooltip" />
-
-        <View
-            android:layout_width="2dp"
-            android:layout_height="match_parent"
-            android:layout_toStartOf="@id/menu_view"
-            android:background="@color/color_clash_dark" />
-
-        <FrameLayout
-            android:id="@+id/menu_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:nextFocusLeft="@id/root_view"
-            android:onClick="@{menu}">
-
-            <View
-                android:layout_width="@dimen/item_tailing_component_size"
-                android:layout_height="@dimen/item_tailing_component_size"
-                android:layout_margin="@dimen/item_tailing_margin"
-                android:background="@drawable/ic_baseline_more_vert" />
-        </FrameLayout>
-    </RelativeLayout>
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileUsagePercentageText(profile)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{(profile.total > 1 || profile.expire > 0) ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/remaining_traffic" />
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:max="200"
+                android:progress="@{I18nKt.getProfileUsagePercentage(profile)}"
+                app:indicatorColor="?attr/colorPrimary"
+                app:trackColor="?attr/colorSurfaceVariant"
+                app:trackCornerRadius="4dp"
+                app:trackThickness="8dp"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/type_view" />
+            <TextView
+                android:id="@+id/remaining_traffic"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileRemainingTraffic(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintEnd_toStartOf="@+id/used_traffic"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/progress_bar" />
+            <TextView
+                android:id="@+id/used_traffic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@{I18nKt.getProfileUsedTraffic(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.total > 1 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@+id/remaining_traffic"
+                app:layout_constraintEnd_toEndOf="parent" />
+            <TextView
+                android:id="@+id/expire_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{I18nKt.getProfileExpireInfo(profile, context)}"
+                android:textAppearance="@style/TextAppearance.Material3.LabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="@{profile.expire > 0 ? View.VISIBLE : View.GONE}"
+                app:layout_constraintBaseline_toBaselineOf="@+id/percentage_text"
+                app:layout_constraintEnd_toStartOf="@+id/percentage_text"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>

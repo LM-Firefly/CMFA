@@ -10,7 +10,7 @@ fun View.setOnInsertsChangedListener(adaptLandscape: Boolean = true, listener: (
         val compat = WindowInsetsCompat.toWindowInsetsCompat(ins)
         val insets = compat.getInsets(WindowInsetsCompat.Type.systemBars())
 
-        val rInsets = if (ViewCompat.getLayoutDirection(v) == ViewCompat.LAYOUT_DIRECTION_LTR) {
+        val rInsets = if (v.layoutDirection == android.view.View.LAYOUT_DIRECTION_LTR) {
             Insets(
                 insets.left,
                 insets.top,

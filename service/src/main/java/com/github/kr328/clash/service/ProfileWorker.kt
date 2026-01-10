@@ -18,9 +18,9 @@ import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.util.sendProfileUpdateCompleted
 import com.github.kr328.clash.service.util.sendProfileUpdateFailed
-import kotlinx.coroutines.*
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
 
 class ProfileWorker : BaseService() {
     private val service: ProfileWorker
@@ -47,8 +47,7 @@ class ProfileWorker : BaseService() {
     }
 
     override fun onDestroy() {
-        stopForeground(true)
-
+        stopForeground(android.app.Service.STOP_FOREGROUND_REMOVE)
         super.onDestroy()
     }
 

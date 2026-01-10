@@ -33,13 +33,12 @@ suspend fun <T> withProfile(
 ): T {
     while (true) {
         val remote = Remote.service.remote.get()
-        val client = remote.profile()
+        val client: IProfileManager = remote.profile()
 
         try {
             return withContext(context) { client.block() }
         } catch (e: DeadObjectException) {
             Log.w("Remote services panic")
-
             Remote.service.remote.reset(remote)
         }
     }

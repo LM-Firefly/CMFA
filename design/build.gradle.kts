@@ -1,7 +1,12 @@
 plugins {
-    kotlin("android")
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
     id("com.android.library")
+}
+
+android {
+    buildFeatures {
+        dataBinding = true
+    }
 }
 
 dependencies {

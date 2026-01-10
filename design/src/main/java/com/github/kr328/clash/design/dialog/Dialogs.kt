@@ -42,7 +42,7 @@ class AppBottomSheetDialog(context: Context) : BottomSheetDialog(context) {
                     insets = it
 
                     (layoutParams as CoordinatorLayout.LayoutParams).also { params ->
-                        if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_LTR) {
+                        if (layoutDirection == android.view.View.LAYOUT_DIRECTION_LTR) {
                             params.setMargins(it.start, 0, it.end, 0)
                         } else {
                             params.setMargins(it.end, 0, it.start, 0)
