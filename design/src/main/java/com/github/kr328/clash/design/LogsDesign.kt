@@ -29,6 +29,10 @@ class LogsDesign(context: Context) : Design<LogsDesign.Request>(context) {
     override val root: View
         get() = binding.root
 
+    fun request(req: Request) {
+        requests.trySend(req)
+    }
+
     suspend fun patchLogs(logs: List<LogFile>) {
         adapter.patchDataSet(adapter::logs, logs, false, LogFile::fileName)
     }

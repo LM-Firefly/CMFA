@@ -60,7 +60,12 @@ class LogcatService : Service(), CoroutineScope by CoroutineScope(Dispatchers.De
 
         unbindService(connection)
 
-        stopForeground(true)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
 
         running = false
 

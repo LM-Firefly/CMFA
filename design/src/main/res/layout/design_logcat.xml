@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="self"
@@ -31,25 +32,28 @@
             android:layout_height="wrap_content"
             android:paddingTop="@{self.surface.insets.top}">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingEnd="@dimen/item_tailing_margin">
 
                 <include
+                    android:id="@+id/activity_bar"
                     layout="@layout/common_activity_bar"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_toStartOf="@id/action_layout" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/action_layout"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <FrameLayout
                     android:id="@+id/action_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true">
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -64,9 +68,10 @@
                             android:clickable="true"
                             android:contentDescription="@string/delete"
                             android:focusable="true"
-                            android:onClick="@{() -> self.requests.offer(Request.Delete)}"
+                            android:onClick="@{() -> self.request(Request.Delete)}"
                             android:padding="@dimen/toolbar_image_action_padding"
-                            android:src="@drawable/ic_baseline_delete" />
+                            android:src="@drawable/ic_baseline_delete"
+                            android:tint="?attr/colorOnSurfaceVariant" />
 
                         <ImageView
                             android:layout_width="@dimen/item_tailing_component_size"
@@ -76,9 +81,10 @@
                             android:clickable="true"
                             android:contentDescription="@string/export"
                             android:focusable="true"
-                            android:onClick="@{() -> self.requests.offer(Request.Export)}"
+                            android:onClick="@{() -> self.request(Request.Export)}"
                             android:padding="@dimen/toolbar_image_action_padding"
-                            android:src="@drawable/ic_baseline_publish" />
+                            android:src="@drawable/ic_baseline_publish"
+                            android:tint="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
 
                     <ImageView
@@ -90,13 +96,14 @@
                         android:clickable="true"
                         android:contentDescription="@string/close"
                         android:focusable="true"
-                        android:onClick="@{() -> self.requests.offer(Request.Close)}"
+                        android:onClick="@{() -> self.request(Request.Close)}"
                         android:padding="@dimen/toolbar_image_action_padding"
                         android:src="@drawable/ic_baseline_stop"
+                        android:tint="?attr/colorOnSurfaceVariant"
                         android:visibility="@{streaming ? View.VISIBLE : View.GONE}" />
                 </FrameLayout>
 
-            </RelativeLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.github.kr328.clash.design.view.ActivityBarLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
