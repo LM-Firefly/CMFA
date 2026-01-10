@@ -30,4 +30,20 @@ class SettingsDesign(context: Context) : Design<SettingsDesign.Request>(context)
     fun request(request: Request) {
         requests.trySend(request)
     }
+
+    fun onRequestStartApp(view: View) {
+        request(Request.StartApp)
+    }
+
+    fun onRequestStartNetwork(view: View) {
+        request(Request.StartNetwork)
+    }
+
+    fun onRequestStartOverride(view: View) {
+        request(Request.StartOverride)
+    }
+
+    fun onRequestStartMetaFeature(view: View) {
+        request(Request.StartMetaFeature)
+    }
 }

@@ -31,6 +31,7 @@ fun PreferenceScreen.clickable(
             get() = binding.iconView.background
             set(value) {
                 binding.iconView.background = value
+                binding.iconView.visibility = if (value == null) View.GONE else View.VISIBLE
             }
         override var title: CharSequence
             get() = binding.titleView.text
@@ -57,6 +58,8 @@ fun PreferenceScreen.clickable(
 
     if (icon != null) {
         impl.icon = context.getDrawableCompat(icon)
+    } else {
+        impl.icon = null
     }
 
     if (summary != null) {
