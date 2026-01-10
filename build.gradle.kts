@@ -1,9 +1,26 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.BaseExtension
-import java.net.URL
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
+import java.net.URI
 import java.util.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+// 全局版本号变量，便于同步
+val appVersionName = "2.11.22"
+val appVersionCode = 211022
+plugins {
+    // 通过 Version Catalog 声明核心插件版本, 避免旧式 buildscript classpath 写法
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.kotlin.parcelize) apply false
+    alias(libs.plugins.ksp) apply false
+}
 
 buildscript {
     repositories {
@@ -12,11 +29,7 @@ buildscript {
         maven("https://raw.githubusercontent.com/MetaCubeX/maven-backup/main/releases")
     }
     dependencies {
-        classpath(libs.build.android)
-        classpath(libs.build.kotlin.common)
-        classpath(libs.build.kotlin.serialization)
-        classpath(libs.build.ksp)
-        classpath(libs.build.golang)
+        // 迁移至自定义 Go 构建任务后，不再需要旧 golang-android 插件
     }
 }
 
@@ -28,161 +41,101 @@ subprojects {
     }
 
     val isApp = name == "app"
-
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
-
-    fun queryConfigProperty(key: String): Any? {
-        val localProperties = Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localProperties.load(localPropertiesFile.inputStream())
-        } else {
-            return null
+    if (isApp) {
+        // Gradle 9.0+ 兼容写法，设置 archivesName，自动跟随 appVersionName
+        extensions.configure<org.gradle.api.plugins.BasePluginExtension> {
+            archivesName.set("cmfa-$appVersionName")
         }
-        return localProperties.getProperty(key)
     }
 
-    extensions.configure<BaseExtension> {
-        buildFeatures.buildConfig = true
-        defaultConfig {
-            if (isApp) {
-                val customApplicationId = queryConfigProperty("custom.application.id") as? String?
-                applicationId = customApplicationId.takeIf { it?.isNotBlank() == true } ?: "com.github.metacubex.clash"
-            }
-
-            project.name.let { name ->
-                namespace = if (name == "app") "com.github.kr328.clash"
-                else "com.github.kr328.clash.$name"
-            }
-
-            minSdk = 21
-            targetSdk = 35
-
-            versionName = "2.11.22"
-            versionCode = 211022
-
-            resValue("string", "release_name", "v$versionName")
-            resValue("integer", "release_code", "$versionCode")
-
-            ndk {
-                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-            }
-
-            externalNativeBuild {
-                cmake {
-                    abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+    // 根据项目类型配置 Android 扩展
+    if (isApp) {
+        extensions.configure<ApplicationExtension> {
+            namespace = "com.github.kr328.clash"
+            defaultConfig {
+                applicationId = "com.github.metacubex.mihomo"
+                minSdk = 23
+                targetSdk = 36
+                versionName = appVersionName
+                versionCode = appVersionCode
+                resValue("string", "release_name", "v$versionName")
+                resValue("integer", "release_code", versionCode.toString())
+                ndk {
+                    abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                }
+                externalNativeBuild {
+                    cmake {
+                        abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                    }
                 }
             }
 
-            if (!isApp) {
-                consumerProguardFiles("consumer-rules.pro")
-            } else {
-                setProperty("archivesBaseName", "cmfa-$versionName")
-            }
-        }
-
-        ndkVersion = "27.2.12479018"
-
-        compileSdkVersion(defaultConfig.targetSdk!!)
-
-        if (isApp) {
-            packagingOptions {
+        ndkVersion = "29.0.14206865"
+        compileSdk = 36
+            packaging {
                 resources {
                     excludes.add("DebugProbesKt.bin")
                 }
             }
-        }
-
-        productFlavors {
-            flavorDimensions("feature")
-
-            val removeSuffix = (queryConfigProperty("remove.suffix") as? String)?.toBoolean() == true
-
-            create("alpha") {
-                isDefault = true
-                dimension = flavorDimensionList[0]
-                if (!removeSuffix) {
+            flavorDimensions += "feature"
+            productFlavors {
+                create("alpha") {
+                    dimension = "feature"
                     versionNameSuffix = ".Alpha"
+                    // flag removed
+                    resValue("string", "launch_name", "@string/launch_name_alpha")
+                    resValue("string", "application_name", "@string/application_name_alpha")
                 }
-
-
-                buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
-
-                resValue("string", "launch_name", "@string/launch_name_alpha")
-                resValue("string", "application_name", "@string/application_name_alpha")
-
-                if (isApp && !removeSuffix) {
-                    applicationIdSuffix = ".alpha"
-                }
-            }
-
-            create("meta") {
-
-                dimension = flavorDimensionList[0]
-                if (!removeSuffix) {
+                create("meta") {
+                    dimension = "feature"
                     versionNameSuffix = ".Meta"
-                }
-
-                buildConfigField("boolean", "PREMIUM", "Boolean.parseBoolean(\"false\")")
-
-                resValue("string", "launch_name", "@string/launch_name_meta")
-                resValue("string", "application_name", "@string/application_name_meta")
-
-                if (isApp && !removeSuffix) {
-                    applicationIdSuffix = ".meta"
+                    // flag removed
+                    resValue("string", "launch_name", "@string/launch_name_meta")
+                    resValue("string", "application_name", "@string/application_name_meta")
                 }
             }
-        }
-
-        sourceSets {
-            getByName("meta") {
-                java.srcDirs("src/foss/java")
+            sourceSets {
+                getByName("meta") {
+                    java.srcDir("src/foss/java")
+                }
+                getByName("alpha") {
+                    java.srcDir("src/foss/java")
+                }
             }
-            getByName("alpha") {
-                java.srcDirs("src/foss/java")
-            }
-        }
-
-        signingConfigs {
-            val keystore = rootProject.file("signing.properties")
-            if (keystore.exists()) {
-                create("release") {
-                    val prop = Properties().apply {
-                        keystore.inputStream().use(this::load)
+            signingConfigs {
+                val keystore = rootProject.file("signing.properties")
+                if (keystore.exists()) {
+                    create("release") {
+                        val prop = Properties().apply {
+                            keystore.inputStream().use(this::load)
+                        }
+                        storeFile = rootProject.file("release.keystore")
+                        storePassword = prop.getProperty("keystore.password")!!
+                        keyAlias = prop.getProperty("key.alias")!!
+                        keyPassword = prop.getProperty("key.password")!!
                     }
-
-                    storeFile = rootProject.file("release.keystore")
-                    storePassword = prop.getProperty("keystore.password")!!
-                    keyAlias = prop.getProperty("key.alias")!!
-                    keyPassword = prop.getProperty("key.password")!!
                 }
             }
-        }
-
-        buildTypes {
-            named("release") {
-                isMinifyEnabled = isApp
-                isShrinkResources = isApp
-                signingConfig = signingConfigs.findByName("release") ?: signingConfigs["debug"]
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
+            buildTypes {
+                named("release") {
+                    isMinifyEnabled = true
+                    isShrinkResources = true
+                    signingConfig = signingConfigs.findByName("release") ?: signingConfigs["debug"]
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                }
+                named("debug") {
+                    versionNameSuffix = ".debug"
+                    signingConfig = signingConfigs.findByName("release") ?: signingConfigs["debug"]
+                }
             }
-            named("debug") {
-                versionNameSuffix = ".debug"
+            buildFeatures {
+                buildConfig = true
+                dataBinding = project.name != "hideapi"
             }
-        }
-
-        buildFeatures.apply {
-            dataBinding {
-                isEnabled = name != "hideapi"
-            }
-        }
-
-        if (isApp) {
-            this as AppExtension
-
             splits {
                 abi {
                     isEnable = true
@@ -191,24 +144,121 @@ subprojects {
                     include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
                 }
             }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_24
+                targetCompatibility = JavaVersion.VERSION_24
+            }
         }
+    } else {
+        extensions.configure<LibraryExtension> {
+            project.name.let { name ->
+                namespace = "com.github.kr328.clash.$name"
+            }
+            defaultConfig {
+                minSdk = 23
 
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_21
-            targetCompatibility = JavaVersion.VERSION_21
+                resValue("string", "release_name", "v$appVersionName")
+                resValue("integer", "release_code", appVersionCode.toString())
+
+                ndk {
+                    abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                }
+
+                externalNativeBuild {
+                    cmake {
+                        abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+                    }
+                }
+                
+                consumerProguardFiles("consumer-rules.pro")
+            }
+        ndkVersion = "29.0.14206865"
+        compileSdk = 36
+            flavorDimensions += "feature"
+            productFlavors {
+                create("alpha") {
+                    dimension = "feature"
+                    // flag removed
+                    if (project.name == "design") {
+                        resValue("string", "launch_name", "@string/launch_name_alpha")
+                        resValue("string", "application_name", "@string/application_name_alpha")
+                    }
+                }
+                create("meta") {
+                    dimension = "feature"
+                    // flag removed
+                    if (project.name == "design") {
+                        resValue("string", "launch_name", "@string/launch_name_meta")
+                        resValue("string", "application_name", "@string/application_name_meta")
+                    }
+                }
+            }
+
+            sourceSets {
+                named("meta") {
+                    java.srcDir("src/foss/java")
+                }
+                named("alpha") {
+                    java.srcDir("src/foss/java")
+                }
+            }
+
+            buildTypes {
+                named("release") {
+                    isMinifyEnabled = false
+                    proguardFiles(
+                        getDefaultProguardFile("proguard-android-optimize.txt"),
+                        "proguard-rules.pro"
+                    )
+                }
+            }
+
+            buildFeatures {
+                buildConfig = true
+                dataBinding = project.name != "hideapi"
+            }
+
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_24
+                targetCompatibility = JavaVersion.VERSION_24
+            }
         }
+    }
+    tasks.withType<KotlinCompile>().configureEach {
+        @Suppress("UnstableApiUsage")
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_24)
+    }
+    tasks.withType<JavaCompile>().configureEach {
+        options.compilerArgs.add("-Xlint:deprecation")
     }
 }
 
-task("clean", type = Delete::class) {
-    delete(rootProject.buildDir)
+tasks.register<Delete>("clean") {
+    delete(layout.buildDirectory)
+}
+tasks.register("printJdkInfo") {
+    group = "verification"
+    description = "Prints the current JVM version and java.home used by Gradle"
+    doLast {
+        val props = listOf(
+            "java.version",
+            "java.vendor",
+            "java.vm.name",
+            "java.vm.version",
+            "java.runtime.version",
+            "java.home",
+        )
+        println("===== JDK Runtime Info (Gradle JVM) =====")
+        props.forEach { k -> println("$k = ${System.getProperty(k)}") }
+        println("java.class.version = ${System.getProperty("java.class.version")}")
+    }
 }
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
 
     doLast {
-        val sha256 = URL("$distributionUrl.sha256").openStream()
+        val sha256 = URI.create("${distributionUrl}.sha256").toURL().openStream()
             .use { it.reader().readText().trim() }
 
         file("gradle/wrapper/gradle-wrapper.properties")

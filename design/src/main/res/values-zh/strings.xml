@@ -197,6 +197,12 @@
     <string name="compatible">兼容</string>
     <string name="format_update_provider_failure">更新 %1$s: %2$s</string>
     <string name="update_all">更新全部</string>
+    
+    <!-- Provider subscription info -->
+    <string name="remaining_traffic">剩余流量: %s</string>
+    <string name="used_traffic">已使用: %1$s / %2$s</string>
+    <string name="expire_info_days">%1$s (剩余 %2$d 天)</string>
+    <string name="expire_info_expired">%s (已过期)</string>
     <string name="proxy_empty_tips">没有可以显示的组</string>
     <string name="reverse">反转</string>
     <string name="close">关闭</string>
