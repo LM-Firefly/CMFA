@@ -2,6 +2,7 @@
 <resources>
     <!-- Common -->
     <dimen name="divider_size">1dp</dimen>
+    <dimen name="dp_0">0dp</dimen>
 
     <!-- Dialog -->
     <dimen name="dialog_padding">20dp</dimen>
@@ -24,6 +25,7 @@
     <dimen name="bottom_sheet_background_padding_top">10dp</dimen>
     <dimen name="bottom_sheet_header_height">5dp</dimen>
     <dimen name="bottom_sheet_menu_items_padding">5dp</dimen>
+    <dimen name="dialog_menu_item_padding">12dp</dimen>
 
     <!-- Large Item -->
     <dimen name="large_item_padding_vertical">15dp</dimen>
@@ -45,8 +47,8 @@
     <dimen name="item_midden_margin">10dp</dimen>
 
     <!-- Large Card -->
-    <dimen name="large_action_card_radius">8dp</dimen>
-    <dimen name="large_action_card_elevation">5dp</dimen>
+    <dimen name="large_action_card_radius">12dp</dimen>
+    <dimen name="large_action_card_elevation">2dp</dimen>
     <dimen name="large_action_card_min_height">85dp</dimen>
 
     <!-- Tips -->
@@ -58,21 +60,22 @@
 
     <!-- Main Design -->
     <dimen name="main_card_margin_vertical">5dp</dimen>
-    <dimen name="main_label_margin_vertical">2dp</dimen>
     <dimen name="main_padding_horizontal">30dp</dimen>
     <dimen name="main_logo_size">50dp</dimen>
     <dimen name="main_top_banner_height">90dp</dimen>
 
     <!--  Proxy Design -->
-    <dimen name="proxy_layout_padding">3dp</dimen>
-    <dimen name="proxy_content_padding">15dp</dimen>
+    <dimen name="proxy_layout_padding">4dp</dimen>
+    <dimen name="proxy_content_padding">16dp</dimen>
     <dimen name="proxy_content_padding_grid3">12dp</dimen>
-    <dimen name="proxy_text_margin">10dp</dimen>
-    <dimen name="proxy_text_margin_grid3">5dp</dimen>
-    <dimen name="proxy_text_size">12sp</dimen>
-    <dimen name="proxy_text_size_grid3">11sp</dimen>
-    <dimen name="proxy_card_radius">5dp</dimen>
-    <dimen name="proxy_card_offset">0dp</dimen>
+    <dimen name="proxy_text_margin">4dp</dimen>
+    <dimen name="proxy_text_margin_grid3">2dp</dimen>
+    <dimen name="proxy_text_size">14sp</dimen>
+    <dimen name="proxy_text_size_grid3">12sp</dimen>
+    <dimen name="proxy_card_radius">12dp</dimen>
+    <dimen name="proxy_card_offset">2dp</dimen>
+    <dimen name="proxy_card_min_height">68dp</dimen>
+    <dimen name="groups_menu_card_radius">16dp</dimen>
 
     <!-- Properties Design -->
     <dimen name="properties_element_margin_vertical">2.5dp</dimen>

@@ -18,7 +18,12 @@ class LogFileAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return Holder(ActionLabel(context).apply {
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            layoutParams = ViewGroup.MarginLayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                val horizontalMargin = context.resources.getDimensionPixelSize(
+                    com.github.kr328.clash.design.R.dimen.item_header_margin
+                )
+                setMargins(horizontalMargin, 0, horizontalMargin, 0)
+            }
         })
     }
 

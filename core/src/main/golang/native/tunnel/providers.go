@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -13,14 +14,33 @@ import (
 var ErrInvalidType = errors.New("invalid type")
 
 type Provider struct {
-	Name        string `json:"name"`
-	VehicleType string `json:"vehicleType"`
-	Type        string `json:"type"`
-	UpdatedAt   int64  `json:"updatedAt"`
+	Name             string            `json:"name"`
+	VehicleType      string            `json:"vehicleType"`
+	Type             string            `json:"type"`
+	UpdatedAt        int64             `json:"updatedAt"`
+	Path             string            `json:"path"`
+	SubscriptionInfo *SubscriptionInfo `json:"subscriptionInfo,omitempty"`
+}
+
+type SubscriptionInfo struct {
+	Upload   int64 `json:"Upload"`
+	Download int64 `json:"Download"`
+	Total    int64 `json:"Total"`
+	Expire   int64 `json:"Expire"`
 }
 
 type UpdatableProvider interface {
 	UpdatedAt() time.Time
+}
+
+type VehicleProvider interface {
+	Vehicle() provider.Vehicle
+}
+
+// subscriptionInfoWrapper is a minimal struct to extract only subscriptionInfo from provider JSON.
+// subscriptionInfo is a private field with no getter, so JSON extraction is the only way.
+type subscriptionInfoWrapper struct {
+	SubscriptionInfo *SubscriptionInfo `json:"subscriptionInfo,omitempty"`
 }
 
 func QueryProviders() []*Provider {
@@ -49,19 +69,34 @@ func QueryProviders() []*Provider {
 
 	for _, p := range providers {
 		updatedAt := time.Time{}
+		path := ""
 
 		if s, ok := p.(UpdatableProvider); ok {
 			updatedAt = s.UpdatedAt()
 		}
 
-		result = append(result, &Provider{
+		if v, ok := p.(VehicleProvider); ok {
+			path = v.Vehicle().Path()
+		}
+
+		item := &Provider{
 			Name:        p.Name(),
 			VehicleType: p.VehicleType().String(),
 			Type:        p.Type().String(),
 			UpdatedAt:   updatedAt.UnixNano() / 1000 / 1000,
-		})
-	}
+			Path:        path,
+		}
 
+		// Extract subscriptionInfo via JSON since it has no public getter
+		if raw, err := json.Marshal(p); err == nil {
+			var wrapper subscriptionInfoWrapper
+			if json.Unmarshal(raw, &wrapper) == nil && wrapper.SubscriptionInfo != nil {
+				item.SubscriptionInfo = wrapper.SubscriptionInfo
+			}
+		}
+
+		result = append(result, item)
+	}
 	return result
 }
 

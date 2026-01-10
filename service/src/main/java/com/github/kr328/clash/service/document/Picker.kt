@@ -7,6 +7,7 @@ import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.data.Pending
 import com.github.kr328.clash.service.data.PendingDao
 import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.ProfileProcessor
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import java.io.FileNotFoundException
@@ -138,11 +139,6 @@ class Picker(private val context: Context) {
                 ageSecretKey = imported.ageSecretKey
             )
         )
-
-        val source = context.importedDir.resolve(uuid.toString())
-        val target = context.pendingDir.resolve(uuid.toString())
-
-        target.deleteRecursively()
-        source.copyRecursively(target)
+        ProfileProcessor.clone(context, uuid, uuid)
     }
 }
