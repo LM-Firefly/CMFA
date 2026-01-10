@@ -2,15 +2,11 @@ package com.github.kr328.clash.design.preference
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.appcompat.widget.ListPopupWindow
-import com.github.kr328.clash.design.R
-import com.github.kr328.clash.design.adapter.PopupListAdapter
-import com.github.kr328.clash.design.util.getPixels
-import com.github.kr328.clash.design.util.measureWidth
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.reflect.KMutableProperty0
 
 interface SelectableListPreference<T> : ClickablePreference {
     var selected: Int
@@ -46,7 +42,7 @@ fun <T> PreferenceScreen.selectableList(
         impl.selected = values.indexOf(initial)
 
         impl.clicked {
-            popupSelectMenu(impl, value, valuesText.map { context.getText(it) }, values)
+            popupSelectMenu(impl, value, valuesText, values)
         }
     }
 
@@ -56,30 +52,13 @@ fun <T> PreferenceScreen.selectableList(
 private fun <T> PreferenceScreen.popupSelectMenu(
     impl: SelectableListPreference<T>,
     value: KMutableProperty0<T>,
-    valuesText: List<CharSequence>,
+    valuesText: Array<Int>,
     values: Array<T>,
 ) {
-    ListPopupWindow(context).apply {
-        val adapter = PopupListAdapter(
-            context,
-            valuesText,
-            impl.selected,
-        )
-
-        setAdapter(adapter)
-
-        anchorView = impl.view
-
-        width = adapter.measureWidth(context)
-            .coerceAtLeast(context.getPixels(R.dimen.dialog_menu_min_width))
-
-        isModal = true
-
-        horizontalOffset = context.getPixels(R.dimen.item_header_component_size) +
-                context.getPixels(R.dimen.item_header_margin) * 2
-
-        setOnItemClickListener { _, _, position, _ ->
-            dismiss()
+    MaterialAlertDialogBuilder(context)
+        .setTitle(impl.title)
+        .setSingleChoiceItems(valuesText.map { context.getText(it) }.toTypedArray(), impl.selected) { dialog, position ->
+            dialog.dismiss()
 
             launch(Dispatchers.Main) {
                 withContext(Dispatchers.IO) {
@@ -90,7 +69,5 @@ private fun <T> PreferenceScreen.popupSelectMenu(
                 impl.listener?.onChanged()
             }
         }
-
-        show()
-    }
+        .show()
 }
