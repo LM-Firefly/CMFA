@@ -6,10 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.getSystemService
-import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.compat.pendingIntentFlags
 import com.github.kr328.clash.common.compat.startForegroundServiceCompat
 import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.common.Global
 import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.componentName
 import com.github.kr328.clash.common.util.setUUID
@@ -17,10 +17,10 @@ import com.github.kr328.clash.service.data.Imported
 import com.github.kr328.clash.service.data.ImportedDao
 import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.util.importedDir
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.TimeUnit
 
 class ProfileReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -48,7 +48,7 @@ class ProfileReceiver : BroadcastReceiver() {
         private val lock = Mutex()
         private var initialized: Boolean = false
 
-        suspend fun rescheduleAll(context: Context) = lock.withLock {
+        suspend fun rescheduleAll(context: Context): Unit = lock.withLock {
             if (initialized)
                 return
 
