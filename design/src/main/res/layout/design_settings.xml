@@ -28,33 +28,45 @@
                 android:paddingTop="@{(float) self.surface.insets.top + @dimen/toolbar_height}"
                 android:paddingBottom="@{self.surface.insets.bottom}">
 
-                <com.github.kr328.clash.design.view.ActionLabel
+                <include
+                    layout="@layout/component_action_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_header_margin"
+                    android:layout_marginEnd="@dimen/item_header_margin"
                     android:onClick="@{() -> self.request(Request.StartApp)}"
-                    app:icon="@drawable/ic_baseline_settings"
-                    app:text="@string/app" />
+                    bind:icon="@{@drawable/ic_baseline_settings}"
+                    bind:text="@{@string/app}" />
 
-                <com.github.kr328.clash.design.view.ActionLabel
+                <include
+                    layout="@layout/component_action_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_header_margin"
+                    android:layout_marginEnd="@dimen/item_header_margin"
                     android:onClick="@{() -> self.request(Request.StartNetwork)}"
-                    app:icon="@drawable/ic_baseline_dns"
-                    app:text="@string/network" />
+                    bind:icon="@{@drawable/ic_baseline_dns}"
+                    bind:text="@{@string/network}" />
 
-                <com.github.kr328.clash.design.view.ActionLabel
+                <include
+                    layout="@layout/component_action_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_header_margin"
+                    android:layout_marginEnd="@dimen/item_header_margin"
                     android:onClick="@{() -> self.request(Request.StartOverride)}"
-                    app:icon="@drawable/ic_baseline_extension"
-                    app:text="@string/override" />
+                    bind:icon="@{@drawable/ic_baseline_extension}"
+                    bind:text="@{@string/override}" />
 
-                <com.github.kr328.clash.design.view.ActionLabel
+                <include
+                    layout="@layout/component_action_label"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_header_margin"
+                    android:layout_marginEnd="@dimen/item_header_margin"
                     android:onClick="@{() -> self.request(Request.StartMetaFeature)}"
-                    app:icon="@drawable/ic_baseline_meta"
-                    app:text="@string/meta_features" />
+                    bind:icon="@{@drawable/ic_baseline_meta}"
+                    bind:text="@{@string/meta_features}" />
 
             </LinearLayout>
         </com.github.kr328.clash.design.view.ObservableScrollView>
@@ -71,3 +83,4 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
+

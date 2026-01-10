@@ -24,10 +24,13 @@ class ProxyViewState(
     var delayText: String = ""
     var background: Int = config.unselectedBackground
     var controls: Int = config.unselectedControl
+    var pinned: Boolean = false
+        private set
 
     private var delay: Int = 0
     private var selected: Boolean = false
     private var parentNow: String = ""
+    private var parentFixed: String? = null
     private var linkNow: String? = null
 
     private var lastFrameTime = System.currentTimeMillis()
@@ -64,6 +67,11 @@ class ProxyViewState(
         if (parentNow !== parent.now) {
             parentNow = parent.now
             selected = proxy.name == parent.now
+        }
+
+        if (parentFixed !== parent.fixed) {
+            parentFixed = parent.fixed
+            pinned = proxy.name == parent.fixed
         }
 
         controls = if (selected) config.selectedControl else config.unselectedControl
