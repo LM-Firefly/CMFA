@@ -58,8 +58,8 @@ body:
 
         Example:
         ```
-        - Version: 2.5.4-premium
-        - APK filename: cfa-2.5.4-premium-arm64-v8a-release.apk
+        - Version: 2.5.4
+        - APK filename: cfa-2.5.4-arm64-v8a-release.apk
         - Distribution Channel: Google Play
         ```
       value: |

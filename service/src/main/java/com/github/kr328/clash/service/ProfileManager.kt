@@ -14,12 +14,12 @@ import com.github.kr328.clash.service.util.generateProfileUUID
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.pendingDir
 import com.github.kr328.clash.service.util.sendProfileChanged
+import java.io.FileNotFoundException
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.FileNotFoundException
-import java.util.*
 
 class ProfileManager(private val context: Context) : IProfileManager,
     CoroutineScope by CoroutineScope(Dispatchers.IO) {
@@ -81,7 +81,7 @@ class ProfileManager(private val context: Context) : IProfileManager,
             ageSecretKey = imported.ageSecretKey
         )
 
-        cloneImportedFiles(uuid, newUUID)
+        ProfileProcessor.clone(context, uuid, newUUID)
 
         PendingDao().insert(pending)
 
@@ -95,7 +95,7 @@ class ProfileManager(private val context: Context) : IProfileManager,
             val imported = ImportedDao().queryByUUID(uuid)
                 ?: throw FileNotFoundException("profile $uuid not found")
 
-            cloneImportedFiles(uuid)
+            ProfileProcessor.clone(context, uuid, uuid)
 
             PendingDao().insert(
                 Pending(
@@ -211,18 +211,6 @@ class ProfileManager(private val context: Context) : IProfileManager,
         return context.pendingDir.resolve(uuid.toString()).directoryLastModified
             ?: context.importedDir.resolve(uuid.toString()).directoryLastModified
             ?: -1
-    }
-
-    private fun cloneImportedFiles(source: UUID, target: UUID = source) {
-        val s = context.importedDir.resolve(source.toString())
-        val t = context.pendingDir.resolve(target.toString())
-
-        if (!s.exists())
-            throw FileNotFoundException("profile $source not found")
-
-        t.deleteRecursively()
-
-        s.copyRecursively(t)
     }
 
     private suspend fun scheduleUpdate(uuid: UUID, startImmediately: Boolean) {

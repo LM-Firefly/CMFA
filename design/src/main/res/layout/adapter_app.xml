@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <data>
         <variable
             name="app"
@@ -9,56 +10,67 @@
             type="boolean" />
     </data>
 
-    <RelativeLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginVertical="4dp"
         android:clickable="true"
         android:focusable="true"
-        android:minHeight="@dimen/item_min_height"
-        android:paddingEnd="@dimen/item_tailing_margin">
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp">
 
-        <View
-            android:id="@+id/icon_view"
-            android:layout_width="@dimen/item_header_component_size"
-            android:layout_height="@dimen/item_header_component_size"
-            android:layout_centerVertical="true"
-            android:layout_marginHorizontal="@dimen/item_header_margin"
-            android:background="@{app.icon}"
-            android:clickable="false"
-            android:focusable="false" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/switch_view"
-            android:layout_toEndOf="@id/icon_view"
-            android:orientation="vertical">
+            android:padding="16dp">
+
+            <View
+                android:id="@+id/icon_view"
+                android:layout_width="@dimen/item_header_component_size"
+                android:layout_height="@dimen/item_header_component_size"
+                android:background="@{app.icon}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/label_view"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:text="@{app.label}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1" />
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                app:layout_constraintBottom_toTopOf="@+id/package_view"
+                app:layout_constraintEnd_toStartOf="@+id/switch_view"
+                app:layout_constraintStart_toEndOf="@+id/icon_view"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
+                android:id="@+id/package_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@{app.packageName}"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/switch_view"
+                app:layout_constraintStart_toStartOf="@+id/label_view"
+                app:layout_constraintTop_toBottomOf="@+id/label_view" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/switch_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/item_text_margin"
-                android:text="@{app.packageName}"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body2" />
-        </LinearLayout>
-
-        <com.google.android.material.checkbox.MaterialCheckBox
-            android:id="@+id/switch_view"
-            android:layout_width="@dimen/item_tailing_component_size"
-            android:layout_height="@dimen/item_tailing_component_size"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:checked="@{selected}"
-            android:clickable="false"
-            android:focusable="false"
-            android:gravity="center_horizontal|end" />
-    </RelativeLayout>
+                android:checked="@{selected}"
+                android:clickable="false"
+                android:focusable="false"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
 </layout>
