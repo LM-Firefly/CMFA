@@ -20,6 +20,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }
 
 buildscript {
@@ -39,7 +40,6 @@ subprojects {
         google()
         maven("https://raw.githubusercontent.com/MetaCubeX/maven-backup/main/releases")
     }
-
     val isApp = name == "app"
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
     if (isApp) {
@@ -48,7 +48,6 @@ subprojects {
             archivesName.set("cmfa-$appVersionName")
         }
     }
-
     // 根据项目类型配置 Android 扩展
     if (isApp) {
         extensions.configure<ApplicationExtension> {
@@ -70,9 +69,8 @@ subprojects {
                     }
                 }
             }
-
-        ndkVersion = "29.0.14206865"
-        compileSdk = 36
+            ndkVersion = "29.0.14206865"
+            compileSdk = 36
             packaging {
                 resources {
                     excludes.add("DebugProbesKt.bin")
@@ -134,6 +132,7 @@ subprojects {
             }
             buildFeatures {
                 buildConfig = true
+                compose = true
                 dataBinding = project.name != "hideapi"
             }
             splits {
@@ -156,24 +155,20 @@ subprojects {
             }
             defaultConfig {
                 minSdk = 23
-
                 resValue("string", "release_name", "v$appVersionName")
                 resValue("integer", "release_code", appVersionCode.toString())
-
                 ndk {
                     abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
                 }
-
                 externalNativeBuild {
                     cmake {
                         abiFilters("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
                     }
                 }
-                
                 consumerProguardFiles("consumer-rules.pro")
             }
-        ndkVersion = "29.0.14206865"
-        compileSdk = 36
+            ndkVersion = "29.0.14206865"
+            compileSdk = 36
             flavorDimensions += "feature"
             productFlavors {
                 create("alpha") {
@@ -193,7 +188,6 @@ subprojects {
                     }
                 }
             }
-
             sourceSets {
                 named("meta") {
                     java.srcDir("src/foss/java")
@@ -202,7 +196,6 @@ subprojects {
                     java.srcDir("src/foss/java")
                 }
             }
-
             buildTypes {
                 named("release") {
                     isMinifyEnabled = false
@@ -212,30 +205,50 @@ subprojects {
                     )
                 }
             }
-
             buildFeatures {
                 buildConfig = true
+                compose = project.name == "design" || project.name == "app"
                 dataBinding = project.name != "hideapi"
             }
-
             compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_24
                 targetCompatibility = JavaVersion.VERSION_24
             }
         }
     }
-    tasks.withType<KotlinCompile>().configureEach {
-        @Suppress("UnstableApiUsage")
-        compilerOptions.jvmTarget.set(JvmTarget.JVM_24)
-    }
-    tasks.withType<JavaCompile>().configureEach {
-        options.compilerArgs.add("-Xlint:deprecation")
+    // 为 Release 构建单独配置编译版本以避免 Compose Compiler 兼容性问题  
+    afterEvaluate {
+        // 应用到 release 变体的 Java 和 Kotlin 编译任务
+        tasks.matching { task ->
+            task.name.contains("Release") && (task is JavaCompile || task is KotlinCompile)
+        }.forEach { task ->
+            when (task) {
+                is JavaCompile -> {
+                    task.sourceCompatibility = "21"
+                    task.targetCompatibility = "21"
+                }
+                is KotlinCompile -> {
+                    @Suppress("UnstableApiUsage")
+                    task.compilerOptions.jvmTarget.set(JvmTarget.JVM_21)
+                }
+            }
+        }
+        // Debug 变体保持 Java 24
+        tasks.matching { task ->
+            task.name.contains("Debug") && task is JavaCompile
+        }.forEach { task ->
+            (task as JavaCompile).apply {
+                sourceCompatibility = "24"
+                targetCompatibility = "24"
+            }
+        }
     }
 }
 
 tasks.register<Delete>("clean") {
     delete(layout.buildDirectory)
 }
+
 tasks.register("printJdkInfo") {
     group = "verification"
     description = "Prints the current JVM version and java.home used by Gradle"
@@ -256,11 +269,9 @@ tasks.register("printJdkInfo") {
 
 tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
-
     doLast {
         val sha256 = URI.create("${distributionUrl}.sha256").toURL().openStream()
             .use { it.reader().readText().trim() }
-
         file("gradle/wrapper/gradle-wrapper.properties")
             .appendText("distributionSha256Sum=$sha256")
     }

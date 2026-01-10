@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
 }
 
 dependencies {
@@ -34,6 +35,8 @@ dependencies {
     implementation(libs.kotlin.serialization.json)
     implementation(platform(libs.okhttp.bom))
     implementation("com.squareup.okhttp3:okhttp")
+    implementation(platform(libs.compose.bom))
+    implementation("androidx.compose.runtime:runtime")
 }
 
 tasks.named<Delete>("clean") {
@@ -42,11 +45,9 @@ tasks.named<Delete>("clean") {
 
 // 改为将文件下载到构建目录下的 generated 目录，避免修改源码树引发 Gradle 隐式依赖问题
 val geoAssetsDirProvider = layout.buildDirectory.dir("generated/geoAssets")
-
 val downloadGeoFiles = tasks.register("downloadGeoFiles") {
     group = "assets"
     description = "Download geo database files into generated assets directory"
-
     // 注意：GeoSite 在核心 Go 代码中使用文件名 "GeoSite.dat" (首字母大写 S)。
     // 之前这里下载为小写 geosite.dat，导致核心启动时认为缺失再次试图联网下载。
     // 统一改为保存为 "GeoSite.dat"，避免运行时再次下载。
@@ -56,7 +57,6 @@ val downloadGeoFiles = tasks.register("downloadGeoFiles") {
         // 如需国家库可放开："https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/country.mmdb" to "Country.mmdb",
         "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/release/GeoLite2-ASN.mmdb" to "ASN.mmdb",
     )
-
     // 作为输入 (URLs 列表)，协助 Gradle 判断是否需要重新执行
     inputs.property("geoFiles", geoFilesUrls.keys.sorted())
     // 产物目录（使用 Provider 真实路径）
@@ -111,7 +111,6 @@ val downloadGeoFiles = tasks.register("downloadGeoFiles") {
         }
     }
 }
-
 // 使用新的 Variant API 将生成目录加入 assets
 androidComponents {
     onVariants { variant ->

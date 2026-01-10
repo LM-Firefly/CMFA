@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="close_button" type="id" />
+    <item name="activity_bar_close_view" type="id" />
+    <item name="activity_bar_title_view" type="id" />
 </resources>

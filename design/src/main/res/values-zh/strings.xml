@@ -68,6 +68,7 @@
     <string name="show_traffic_summary">在通知中自动刷新流量</string>
     <string name="allow_clash_auto_restart">允许 Clash 自动重启</string>
     <string name="auto_restart">自动重启</string>
+    <string name="application_name_alpha">Clash Meta for Android Alpha</string>
     <string name="stopped">已停止</string>
     <string name="help">帮助</string>
     <string name="tap_to_start">点此启动</string>
@@ -266,4 +267,7 @@
     <string name="external_control_stopped">Clash.Meta 服务已停止</string>
     <string name="import_from_qr_no_permission">相机权限受限，请前往设置开启。</string>
     <string name="import_from_qr_exception">发生系统未知异常，操作失败。</string>
+    <string name="launch_name_meta">Clash Meta</string>
+    <string name="launch_name_alpha">Clash Meta Alpha</string>
+    <string name="application_name_meta">Clash Meta for Android</string>
 </resources>

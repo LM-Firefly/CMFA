@@ -10,6 +10,7 @@
     <string name="format_traffic_forwarded">%s Forwarded</string>
 
     <string name="proxy">Proxy</string>
+    <string name="proxies">Proxies</string>
     <string name="direct_mode">Direct Mode</string>
     <string name="rule_mode">Rule Mode</string>
     <string name="global_mode">Global Mode</string>
@@ -38,12 +39,17 @@
     <string name="format_years_ago">%d years ago</string>
 
     <string name="create_profile">Create Profile</string>
+    <string name="create">Create</string>
     <string name="file">File</string>
+    <string name="new_file">New File</string>
     <string name="import_from_file">Import from File</string>
+    <string name="from_file">From File</string>
     <string name="url">URL</string>
+    <string name="from_url">From URL</string>
     <string name="qr" translatable="false">QR Code</string>
     <string name="import_from_url">Import from URL</string>
     <string name="import_from_qr">Import from QR Code</string>
+    <string name="from_qr">From QR Code</string>
     <string name="external">External</string>
     <string name="format_type_unsaved">%s (Unsaved)</string>
 
@@ -131,6 +137,7 @@
     <string name="system_proxy">System Proxy</string>
     <string name="system_proxy_summary">Attach http proxy to VpnService</string>
     <string name="access_control_mode">Access Control Mode</string>
+    <string name="access_control">Access Control</string>
     <string name="access_control_packages">Access Control Packages</string>
     <string name="access_control_packages_summary">Configure access permission for apps</string>
 
@@ -364,4 +371,11 @@
     <string name="sniffer_config">Load Sniffer From Config</string>
     <string name="sniffer_override">Override Sniffer Config</string>
     <string name="sniffing">Sniffer Mode</string>
+    
+    <!-- Profile types -->
+    <string name="subscription">Subscription</string>
+    <string name="unknown">Unknown</string>
+    <string name="never">Never</string>
+    <string name="format_updated_at">Updated: %s</string>
+    <string name="active">Active</string>
 </resources>
