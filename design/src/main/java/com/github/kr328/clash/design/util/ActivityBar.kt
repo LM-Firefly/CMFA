@@ -11,6 +11,7 @@ fun ActivityBarLayout.applyFrom(context: Context) {
     if (context is Activity) {
         findViewById<ImageView>(R.id.activity_bar_close_view)?.apply {
             setOnClickListener {
+                @Suppress("DEPRECATION")
                 context.onBackPressed()
             }
         }

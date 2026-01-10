@@ -24,47 +24,53 @@
             android:layout_height="wrap_content"
             android:paddingTop="@{self.surface.insets.top}">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingEnd="@dimen/item_tailing_margin">
 
                 <include
+                    android:id="@+id/activity_bar"
                     layout="@layout/common_activity_bar"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerVertical="true"
-                    android:layout_toStartOf="@id/search_view" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/search_view"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
                     android:id="@+id/search_view"
                     android:layout_width="@dimen/item_tailing_component_size"
                     android:layout_height="@dimen/item_tailing_component_size"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/item_tailing_margin"
-                    android:layout_toStartOf="@id/menu_view"
+                    android:layout_marginEnd="@dimen/item_tailing_margin"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:contentDescription="@string/search"
                     android:focusable="true"
                     android:padding="@dimen/toolbar_image_action_padding"
-                    android:src="@drawable/ic_baseline_search" />
+                    android:src="@drawable/ic_baseline_search"
+                    android:tint="?attr/colorOnSurfaceVariant"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/menu_view"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
                     android:id="@+id/menu_view"
                     android:layout_width="@dimen/item_tailing_component_size"
                     android:layout_height="@dimen/item_tailing_component_size"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/item_tailing_margin"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:contentDescription="@string/more"
                     android:focusable="true"
                     android:padding="@dimen/toolbar_image_action_padding"
-                    android:src="@drawable/ic_baseline_more_vert" />
-            </RelativeLayout>
+                    android:src="@drawable/ic_baseline_more_vert"
+                    android:tint="?attr/colorOnSurfaceVariant"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </com.github.kr328.clash.design.view.ActivityBarLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
