@@ -58,8 +58,8 @@ body:
 
         例子:
         ```
-        - 版本: 2.5.4-premium
-        - 安装包文件名: cfa-2.5.4-premium-arm64-v8a-release.apk
+        - 版本: 2.5.4
+        - 安装包文件名: cfa-2.5.4-arm64-v8a-release.apk
         - 应用来源: Google Play
         ```
       value: |

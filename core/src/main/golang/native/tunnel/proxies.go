@@ -1,6 +1,7 @@
 package tunnel
 
 import (
+	"encoding/json"
 	"sort"
 	"strings"
 
@@ -33,6 +34,7 @@ type Proxy struct {
 type ProxyGroup struct {
 	Type    string   `json:"type"`
 	Now     string   `json:"now"`
+	Fixed   string   `json:"fixed"`
 	Proxies []*Proxy `json:"proxies"`
 }
 
@@ -61,7 +63,7 @@ func QueryProxyGroupNames(excludeNotSelectable bool) []string {
 	}
 
 	global := tunnel.Proxies()["GLOBAL"].Adapter().(outboundgroup.ProxyGroup)
-	proxies := global.Providers()[0].Proxies()
+	proxies := global.Proxies()
 	result := make([]string, 0, len(proxies)+1)
 
 	if mode == tunnel.Global {
@@ -98,6 +100,16 @@ func QueryProxyGroup(name string, sortMode SortMode, uiSubtitlePattern *regexp2.
 		return nil
 	}
 
+	var fixed string
+	if data, err := g.MarshalJSON(); err == nil {
+		var m map[string]any
+		if json.Unmarshal(data, &m) == nil {
+			if v, ok := m["fixed"].(string); ok {
+				fixed = v
+			}
+		}
+	}
+
 	proxies := convertProxies(g.Proxies(), uiSubtitlePattern)
 	// 	proxies := collectProviders(g.Providers(), uiSubtitlePattern)
 
@@ -127,6 +139,7 @@ func QueryProxyGroup(name string, sortMode SortMode, uiSubtitlePattern *regexp2.
 	return &ProxyGroup{
 		Type:    g.Type().String(),
 		Now:     g.Now(),
+		Fixed:   fixed,
 		Proxies: proxies,
 	}
 }
@@ -156,11 +169,43 @@ func PatchSelector(selector, name string) bool {
 
 	if err := s.Set(name); err != nil {
 		log.Warnln("Patch selector `%s`: %s", selector, err.Error())
+
+		return false
 	}
 
 	log.Infoln("Patch selector %s -> %s", selector, name)
 
 	closeConnByGroup(selector)
+
+	return true
+}
+
+func PatchForceSelector(selector, name string) bool {
+	p := tunnel.Proxies()[selector]
+
+	if p == nil {
+		log.Warnln("Patch selector `%s`: not found", selector)
+
+		return false
+	}
+
+	g, ok := p.Adapter().(outboundgroup.ProxyGroup)
+	if !ok {
+		log.Warnln("Patch selector `%s`: invalid type %s", selector, p.Type().String())
+
+		return false
+	}
+
+	s, ok := g.(outboundgroup.SelectAble)
+	if !ok {
+		log.Warnln("Patch selector `%s`: invalid type %s", selector, p.Type().String())
+
+		return false
+	}
+
+	s.ForceSet(name)
+
+	log.Infoln("Force patch selector %s -> %s", selector, name)
 
 	return true
 }
@@ -245,4 +290,15 @@ func collectProviders(providers []provider.ProxyProvider, uiSubtitlePattern *reg
 	}
 
 	return result
+}
+
+// QueryProviderNames query provider names
+func QueryProviderNames() []string {
+	var names []string
+
+	for name := range tunnel.Providers() {
+		names = append(names, name)
+	}
+
+	return names
 }

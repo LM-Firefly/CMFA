@@ -13,8 +13,8 @@ interface Preference {
         get() = view.isEnabled
         set(value) {
             view.isEnabled = value
-            view.isClickable = value
-            view.isFocusable = value
+            // 不在根布局上设置clickable和focusable，避免拦截点击事件
+            // 让Preference框架通过setOnClickListener处理点击
             view.alpha = if (value) 1.0f else 0.33f
         }
 }

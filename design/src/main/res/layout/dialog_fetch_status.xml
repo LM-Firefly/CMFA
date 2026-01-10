@@ -20,3 +20,4 @@
             android:layout_marginTop="@dimen/item_text_margin" />
     </LinearLayout>
 </layout>
+
