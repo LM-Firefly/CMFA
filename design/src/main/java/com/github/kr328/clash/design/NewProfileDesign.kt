@@ -1,57 +1,82 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.Context
 import android.view.View
-import com.github.kr328.clash.design.adapter.ProfileProviderAdapter
-import com.github.kr328.clash.design.databinding.DesignNewProfileBinding
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.github.kr328.clash.design.compose.NewProfileScreen
+import com.github.kr328.clash.design.compose.ProfileProviderItemUi
 import com.github.kr328.clash.design.model.ProfileProvider
-import com.github.kr328.clash.design.util.*
 
 class NewProfileDesign(context: Context) : Design<NewProfileDesign.Request>(context) {
     sealed class Request {
         data class Create(val provider: ProfileProvider) : Request()
         data class OpenDetail(val provider: ProfileProvider.External) : Request()
-        data class LaunchScanner(val provider: ProfileProvider.QR) : Request()
+        object LaunchScanner : Request()
     }
 
-    private val binding = DesignNewProfileBinding
-        .inflate(context.layoutInflater, context.root, false)
-    private val adapter = ProfileProviderAdapter(context, this::requestCreate, this::requestDetail)
+    private var providers by mutableStateOf<List<ProfileProvider>>(emptyList())
 
-    override val root: View
-        get() = binding.root
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                val providerItems = providers.map {
+                    ProfileProviderItemUi(
+                        key = it.key(),
+                        icon = it.icon,
+                        name = it.name,
+                        summary = it.summary,
+                        supportLongClick = it is ProfileProvider.External,
+                    )
+                }
 
-    suspend fun patchProviders(providers: List<ProfileProvider>) {
-        adapter.apply {
-            patchDataSet(this::providers, providers)
+                NewProfileScreen(
+                    title = context.getString(R.string.new_profile),
+                    providers = providerItems,
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onProviderClick = { item ->
+                        providers.firstOrNull { it.key() == item.key }?.let { requestCreate(it) }
+                    },
+                    onProviderLongClick = { item ->
+                        providers.firstOrNull { it.key() == item.key }?.let { requestDetail(it) }
+                    }
+                )
+            }
         }
     }
 
-    init {
-        binding.self = this
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.mainList.recyclerList.also {
-            it.bindAppBarElevation(binding.activityBarLayout)
-            it.applyLinearAdapter(context, adapter)
-        }
+    fun patchProviders(providers: List<ProfileProvider>) {
+        this.providers = providers
     }
 
     private fun requestCreate(provider: ProfileProvider) {
         if (provider is ProfileProvider.QR) {
-            requests.trySend(Request.LaunchScanner(provider))
+            requests.trySend(Request.LaunchScanner)
         } else {
             requests.trySend(Request.Create(provider))
         }
-
     }
 
-    private fun requestDetail(provider: ProfileProvider): Boolean {
-        if (provider !is ProfileProvider.External) return false
+    private fun requestDetail(provider: ProfileProvider) {
+        if (provider !is ProfileProvider.External) return
 
         requests.trySend(Request.OpenDetail(provider))
+    }
 
-        return true
+    private fun ProfileProvider.key(): String {
+        return when (this) {
+            is ProfileProvider.File -> "file"
+            is ProfileProvider.Url -> "url"
+            is ProfileProvider.QR -> "qr"
+            is ProfileProvider.External -> "external:${intent.component?.flattenToShortString() ?: name}"
+        }
     }
 }

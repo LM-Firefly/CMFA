@@ -2,9 +2,12 @@ package com.github.kr328.clash.design.model
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
-import com.github.kr328.clash.common.compat.getDrawableCompat
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.compose.IcBaselineAppsImageVector
+import com.github.kr328.clash.design.compose.IcBaselineAttachFileImageVector
+import com.github.kr328.clash.design.compose.IcBaselineCloudDownloadImageVector
+import com.github.kr328.clash.design.compose.IcBaselineQrCodeScannerImageVector
 
 sealed class ProfileProvider {
     class File(private val context: Context) : ProfileProvider() {
@@ -12,8 +15,8 @@ sealed class ProfileProvider {
             get() = context.getString(R.string.file)
         override val summary: String
             get() = context.getString(R.string.import_from_file)
-        override val icon: Drawable?
-            get() = context.getDrawableCompat(R.drawable.ic_baseline_attach_file)
+        override val icon: ImageVector
+            get() = IcBaselineAttachFileImageVector
 
 
     }
@@ -23,8 +26,8 @@ sealed class ProfileProvider {
             get() = context.getString(R.string.url)
         override val summary: String
             get() = context.getString(R.string.import_from_url)
-        override val icon: Drawable?
-            get() = context.getDrawableCompat(R.drawable.ic_baseline_cloud_download)
+        override val icon: ImageVector
+            get() = IcBaselineCloudDownloadImageVector
     }
 
     class QR(private val context: Context) : ProfileProvider() {
@@ -32,17 +35,17 @@ sealed class ProfileProvider {
             get() = context.getString(R.string.qr)
         override val summary: String
             get() = context.getString(R.string.import_from_qr)
-        override val icon: Drawable?
-            get() = context.getDrawableCompat(R.drawable.baseline_qr_code_scanner)
+        override val icon: ImageVector
+            get() = IcBaselineQrCodeScannerImageVector
     }
     class External(
         override val name: String,
         override val summary: String,
-        override val icon: Drawable?,
+        override val icon: ImageVector = IcBaselineAppsImageVector,
         val intent: Intent,
     ) : ProfileProvider()
 
     abstract val name: String
     abstract val summary: String
-    abstract val icon: Drawable?
+    abstract val icon: ImageVector
 }

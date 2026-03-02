@@ -46,8 +46,8 @@ fun Provider.subtitle(context: Context): String {
     val total = subInfo.total
     val expire = subInfo.expire
     val usedStr = used.toBytesString()
-    val totalStr = if (total > 0) total.toBytesString() else "∞"
-    val expireStr = if (expire > 0) Date(expire * 1000).format(context, includeDate = true, includeTime = false) else "∞"
+    val totalStr = if (total > 0) total.toBytesString() else "Unlimited"
+    val expireStr = if (expire > 0) Date(expire * 1000).format(context, includeDate = true, includeTime = false) else "Never"
     return "$typeStr\n$usedStr / $totalStr  $expireStr"
 }
 

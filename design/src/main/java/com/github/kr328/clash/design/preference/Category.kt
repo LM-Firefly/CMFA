@@ -1,25 +1,21 @@
 package com.github.kr328.clash.design.preference
 
 import android.view.View
+import android.widget.FrameLayout
 import androidx.annotation.StringRes
-import com.github.kr328.clash.design.databinding.PreferenceCategoryBinding
-import com.github.kr328.clash.design.util.layoutInflater
 
 fun PreferenceScreen.category(
     @StringRes text: Int,
 ) {
-    val binding = PreferenceCategoryBinding
-        .inflate(context.layoutInflater, root, false)
-
-    binding.textView.text = context.getString(text)
-
+    // TODO: Implement category preference UI
+    val view = FrameLayout(context)
+    
     addElement(object : Preference {
-        override val view: View
-            get() = binding.root
+        override val view: View = view
         override var enabled: Boolean
-            get() = binding.root.isEnabled
+            get() = view.isEnabled
             set(value) {
-                binding.root.isEnabled = value
+                view.isEnabled = value
             }
     })
 }

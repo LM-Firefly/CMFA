@@ -1,89 +1,160 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.Context
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import com.github.kr328.clash.core.model.FetchStatus
-import com.github.kr328.clash.design.databinding.DesignPropertiesBinding
-import com.github.kr328.clash.design.dialog.ModelProgressBarConfigure
+import com.github.kr328.clash.design.compose.PropertiesScreen
 import com.github.kr328.clash.design.dialog.requestModelTextInput
 import com.github.kr328.clash.design.dialog.withModelProgressBar
-import com.github.kr328.clash.design.util.*
+import com.github.kr328.clash.design.dialog.requestConfirm
+import com.github.kr328.clash.design.util.ValidatorAutoUpdateInterval
+import com.github.kr328.clash.design.util.ValidatorHttpUrl
+import com.github.kr328.clash.design.util.ValidatorNotBlank
+import com.github.kr328.clash.design.util.getHtml
 import com.github.kr328.clash.service.model.Profile
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
+import java.util.*
 
 class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(context) {
-    sealed class Request {
-        object Commit : Request()
-        object BrowseFiles : Request()
+    enum class Request {
+        BrowseFiles,
+        Commit
     }
 
-    private val binding = DesignPropertiesBinding
-        .inflate(context.layoutInflater, context.root, false)
+    private var profileState by mutableStateOf(
+        Profile(
+            uuid = UUID.randomUUID(),
+            name = "",
+            type = Profile.Type.File,
+            source = "",
+            active = false,
+            interval = 0,
+            upload = 0,
+            download = 0,
+            total = 0,
+            expire = 0,
+            updatedAt = 0,
+            imported = false,
+            pending = false
+        )
+    )
+    private var processingState by mutableStateOf(false)
 
-    override val root: View
-        get() = binding.root
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                val profile = profileState
 
-    var profile: Profile
-        get() = binding.profile!!
+                PropertiesScreen(
+                    title = context.getString(R.string.properties),
+                    tips = context.getHtml(R.string.tips_properties).toString(),
+                    nameTitle = context.getString(R.string.name),
+                    urlTitle = context.getString(R.string.url),
+                    autoUpdateTitle = context.getString(R.string.auto_update),
+                    disabledText = context.getString(R.string.disabled),
+                    browseFilesTitle = context.getString(R.string.browse_files),
+                    browseFilesSummary = context.getString(R.string.browse_configuration_providers),
+                    name = profile.name,
+                    source = profile.source,
+                    intervalText = if (profile.interval == 0L) {
+                        context.getString(R.string.disabled)
+                    } else {
+                        context.getString(R.string.format_minutes, profile.interval / 1000 / 60)
+                    },
+                    processing = processingState,
+                    sourceEnabled = profile.type != Profile.Type.File,
+                    intervalEnabled = profile.type != Profile.Type.File,
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onInputName = { inputName() },
+                    onInputUrl = { inputUrl() },
+                    onInputInterval = { inputInterval() },
+                    onBrowseFiles = { requestBrowseFiles() },
+                    onSave = { requestCommit() }
+                )
+            }
+        }
+    }
+
+    var profile: Profile = Profile(
+        uuid = UUID.randomUUID(),
+        name = "",
+        type = Profile.Type.File,
+        source = "",
+        active = false,
+        interval = 0,
+        upload = 0,
+        download = 0,
+        total = 0,
+        expire = 0,
+        updatedAt = 0,
+        imported = false,
+        pending = false
+    )
+        get() = profileState
         set(value) {
-            binding.profile = value
+            profileState = value
+            field = value
         }
 
-    val progressing: Boolean
-        get() = binding.processing
+    var progressing: Boolean = false
+        get() = processingState
+        private set
+
+    suspend fun requestExitWithoutSaving(): Boolean {
+        return context.requestConfirm(
+            title = context.getText(R.string.exit_without_save),
+            message = context.getText(R.string.exit_without_save_warning)
+        )
+    }
 
     suspend fun withProcessing(executeTask: suspend (suspend (FetchStatus) -> Unit) -> Unit) {
+        processingState = true
         try {
-            binding.processing = true
-
             context.withModelProgressBar {
                 configure {
                     isIndeterminate = true
                     text = context.getString(R.string.initializing)
                 }
 
-                executeTask {
+                executeTask { status ->
                     configure {
-                        applyFrom(it)
+                        isIndeterminate = status.max <= 0
+                        max = status.max
+                        progress = status.progress
+                        text = when (status.action) {
+                            FetchStatus.Action.FetchConfiguration -> {
+                                context.getString(
+                                    R.string.format_fetching_configuration,
+                                    status.args.firstOrNull() ?: ""
+                                )
+                            }
+
+                            FetchStatus.Action.FetchProviders -> {
+                                context.getString(
+                                    R.string.format_fetching_provider,
+                                    status.args.firstOrNull() ?: ""
+                                )
+                            }
+
+                            FetchStatus.Action.Verifying -> context.getString(R.string.verifying)
+                        }
                     }
                 }
             }
         } finally {
-            binding.processing = false
+            processingState = false
         }
-    }
-
-    suspend fun requestExitWithoutSaving(): Boolean {
-        return withContext(Dispatchers.Main) {
-            suspendCancellableCoroutine { ctx ->
-                val dialog = MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.exit_without_save)
-                    .setMessage(R.string.exit_without_save_warning)
-                    .setCancelable(true)
-                    .setPositiveButton(R.string.ok) { _, _ -> ctx.resume(true) }
-                    .setNegativeButton(R.string.cancel) { _, _ -> }
-                    .setOnDismissListener { if (!ctx.isCompleted) ctx.resume(false) }
-                    .show()
-
-                ctx.invokeOnCancellation { dialog.dismiss() }
-            }
-        }
-    }
-
-    init {
-        binding.self = this
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.tips.text = context.getHtml(R.string.tips_properties)
-
-        binding.scrollRoot.bindAppBarElevation(binding.activityBarLayout)
     }
 
     fun inputName() {
@@ -91,7 +162,7 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
             val name = context.requestModelTextInput(
                 initial = profile.name,
                 title = context.getText(R.string.name),
-                hint = context.getText(R.string.properties),
+                hint = context.getText(R.string.profile_name),
                 error = context.getText(R.string.should_not_be_blank),
                 validator = ValidatorNotBlank
             )
@@ -103,8 +174,9 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
     }
 
     fun inputUrl() {
-        if (profile.type == Profile.Type.External)
+        if (profile.type == Profile.Type.File || profile.type == Profile.Type.External) {
             return
+        }
 
         launch {
             val url = context.requestModelTextInput(
@@ -122,6 +194,10 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
     }
 
     fun inputInterval() {
+        if (profile.type == Profile.Type.File) {
+            return
+        }
+
         launch {
             var minutes = TimeUnit.MILLISECONDS.toMinutes(profile.interval)
 
@@ -147,26 +223,5 @@ class PropertiesDesign(context: Context) : Design<PropertiesDesign.Request>(cont
 
     fun requestBrowseFiles() {
         requests.trySend(Request.BrowseFiles)
-    }
-
-    private fun ModelProgressBarConfigure.applyFrom(status: FetchStatus) {
-        when (status.action) {
-            FetchStatus.Action.FetchConfiguration -> {
-                text = context.getString(R.string.format_fetching_configuration, status.args[0])
-                isIndeterminate = true
-            }
-            FetchStatus.Action.FetchProviders -> {
-                text = context.getString(R.string.format_fetching_provider, status.args[0])
-                isIndeterminate = false
-                max = status.max
-                progress = status.progress
-            }
-            FetchStatus.Action.Verifying -> {
-                text = context.getString(R.string.verifying)
-                isIndeterminate = false
-                max = status.max
-                progress = status.progress
-            }
-        }
     }
 }

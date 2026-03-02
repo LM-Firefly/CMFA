@@ -3,6 +3,7 @@ package com.github.kr328.clash
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.DeadObjectException
 import android.os.PersistableBundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
@@ -86,12 +87,16 @@ class MainActivity : BaseActivity<MainDesign>() {
     private suspend fun MainDesign.fetch() {
         setClashRunning(clashRunning)
 
-        val state = withClash {
-            queryTunnelState()
-        }
-        val providers = withClash {
-            queryProviders()
-        }
+        val state = runCatching {
+            withClash {
+                queryTunnelState()
+            }
+        }.getOrNull() ?: return
+        val providers = runCatching {
+            withClash {
+                queryProviders()
+            }
+        }.getOrDefault(emptyList())
 
         setMode(state.mode)
         setHasProviders(providers.isNotEmpty())
@@ -102,8 +107,12 @@ class MainActivity : BaseActivity<MainDesign>() {
     }
 
     private suspend fun MainDesign.fetchTraffic() {
-        withClash {
-            setForwarded(queryTrafficTotal())
+        runCatching {
+            withClash {
+                setForwarded(queryTrafficTotal())
+            }
+        }.onFailure {
+            if (it !is DeadObjectException) throw it
         }
     }
 

@@ -3,7 +3,10 @@ package com.github.kr328.clash
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.Proxy
+import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.design.ProxyDesign
+import com.github.kr328.clash.design.compose.ProxyLayout
+import com.github.kr328.clash.design.compose.ProxyMode
 import com.github.kr328.clash.design.model.ProxyState
 import com.github.kr328.clash.util.withClash
 import kotlinx.coroutines.isActive
@@ -90,8 +93,7 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                             val currentGroup = names[it.index]
                             val currentState = states[it.index]
                             withClash {
-                                val fixedNode = currentState.fixed
-                                if (fixedNode != null && fixedNode.isNotEmpty() && currentState.now == it.name) {
+                                if (currentState.fixed == it.name) {
                                     patchForceSelector(currentGroup, "")
                                 } else {
                                     patchForceSelector(currentGroup, it.name)
@@ -102,11 +104,15 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                         }
                         is ProxyDesign.Request.UrlTest -> {
                             launch {
-                                withClash {
-                                    healthCheck(names[it.index])
-                                }
+                                try {
+                                    withClash {
+                                        healthCheck(names[it.index])
+                                    }
 
-                                design.requests.send(ProxyDesign.Request.Reload(it.index))
+                                    design.requests.send(ProxyDesign.Request.Reload(it.index))
+                                } finally {
+                                    design.setUrlTestingFinished()
+                                }
                             }
                         }
                         is ProxyDesign.Request.PatchMode -> {
@@ -118,6 +124,33 @@ class ProxyActivity : BaseActivity<ProxyDesign>() {
                                 o.mode = it.mode
 
                                 patchOverride(Clash.OverrideSlot.Session, o)
+                            }
+                        }
+                        is ProxyDesign.Request.SetFilterNotSelectable -> {
+                            uiStore.proxyExcludeNotSelectable = it.notSelectable
+                            design.requests.send(ProxyDesign.Request.ReLaunch)
+                        }
+                        is ProxyDesign.Request.SetProxyMode -> {
+                            val targetMode = when (it.mode) {
+                                ProxyMode.DEFAULT -> null
+                                ProxyMode.DIRECT -> TunnelState.Mode.Direct
+                                ProxyMode.GLOBAL -> TunnelState.Mode.Global
+                                ProxyMode.RULE -> TunnelState.Mode.Rule
+                            }
+                            design.requests.send(ProxyDesign.Request.PatchMode(targetMode))
+                        }
+                        is ProxyDesign.Request.SetProxyLayout -> {
+                            uiStore.proxyLine = it.layout.lines
+                        }
+                        is ProxyDesign.Request.SetProxySort -> {
+                            val coreSort = when (it.sort) {
+                                com.github.kr328.clash.design.compose.ProxySort.DEFAULT -> com.github.kr328.clash.core.model.ProxySort.Default
+                                com.github.kr328.clash.design.compose.ProxySort.NAME -> com.github.kr328.clash.core.model.ProxySort.Title
+                                com.github.kr328.clash.design.compose.ProxySort.DELAY -> com.github.kr328.clash.core.model.ProxySort.Delay
+                            }
+                            uiStore.proxySort = coreSort
+                            names.indices.forEach { idx ->
+                                design.requests.trySend(ProxyDesign.Request.Reload(idx))
                             }
                         }
                     }
