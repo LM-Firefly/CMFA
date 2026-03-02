@@ -1,4 +1,5 @@
-package com.github.kr328.clash.design.adapter
+﻿package com.github.kr328.clash.design.adapter
+import android.widget.FrameLayout
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -110,3 +111,4 @@ class ProxyPageAdapter(
             tag = value
         }
 }
+

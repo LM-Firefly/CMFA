@@ -1,49 +1,41 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.Context
 import android.view.View
-import com.github.kr328.clash.design.databinding.DesignSettingsBinding
-import com.github.kr328.clash.design.util.applyFrom
-import com.github.kr328.clash.design.util.bindAppBarElevation
-import com.github.kr328.clash.design.util.layoutInflater
-import com.github.kr328.clash.design.util.root
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.github.kr328.clash.design.compose.SettingsScreen
 
 class SettingsDesign(context: Context) : Design<SettingsDesign.Request>(context) {
     enum class Request {
         StartApp, StartNetwork, StartOverride, StartMetaFeature,
     }
 
-    private val binding = DesignSettingsBinding
-        .inflate(context.layoutInflater, context.root, false)
-
-    override val root: View
-        get() = binding.root
-
-    init {
-        binding.self = this
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.scrollRoot.bindAppBarElevation(binding.activityBarLayout)
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                SettingsScreen(
+                    title = context.getString(R.string.settings),
+                    appTitle = context.getString(R.string.app),
+                    networkTitle = context.getString(R.string.network),
+                    overrideTitle = context.getString(R.string.override),
+                    metaFeatureTitle = context.getString(R.string.meta_features),
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onStartApp = { request(Request.StartApp) },
+                    onStartNetwork = { request(Request.StartNetwork) },
+                    onStartOverride = { request(Request.StartOverride) },
+                    onStartMetaFeature = { request(Request.StartMetaFeature) }
+                )
+            }
+        }
     }
 
     fun request(request: Request) {
         requests.trySend(request)
-    }
-
-    fun onRequestStartApp(view: View) {
-        request(Request.StartApp)
-    }
-
-    fun onRequestStartNetwork(view: View) {
-        request(Request.StartNetwork)
-    }
-
-    fun onRequestStartOverride(view: View) {
-        request(Request.StartOverride)
-    }
-
-    fun onRequestStartMetaFeature(view: View) {
-        request(Request.StartMetaFeature)
     }
 }

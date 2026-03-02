@@ -1,17 +1,22 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
-import android.app.Dialog
 import android.content.Context
 import android.view.View
-import android.view.ViewGroup
-import com.github.kr328.clash.design.adapter.FileAdapter
-import com.github.kr328.clash.design.databinding.DesignFilesBinding
-import com.github.kr328.clash.design.databinding.DialogFilesMenuBinding
-import com.github.kr328.clash.design.databinding.DialogFilesPopupBinding
-import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.github.kr328.clash.design.compose.FileItemUi
+import com.github.kr328.clash.design.compose.FilesScreen
 import com.github.kr328.clash.design.dialog.requestModelTextInput
 import com.github.kr328.clash.design.model.File
-import com.github.kr328.clash.design.util.*
+import com.github.kr328.clash.design.util.elapsedIntervalString
+import com.github.kr328.clash.design.util.toBytesString
+import com.github.kr328.clash.design.util.ValidatorFileName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -23,32 +28,73 @@ class FilesDesign(context: Context) : Design<FilesDesign.Request>(context) {
         data class DeleteFile(val file: File) : Request()
         data class ImportFile(val file: File?) : Request()
         data class ExportFile(val file: File) : Request()
-
         object PopStack : Request()
     }
 
-    private val binding = DesignFilesBinding
-        .inflate(context.layoutInflater, context.root, false)
-    private val adapter: FileAdapter = FileAdapter(context, this::requestOpen, this::requestMore)
+    private var filesState by mutableStateOf<List<File>>(emptyList())
+    private var currentInBaseDirState by mutableStateOf(false)
+    private var configurationEditableState by mutableStateOf(false)
+    private var elapsedTick by mutableLongStateOf(System.currentTimeMillis())
 
-    override val root: View
-        get() = binding.root
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                val items = filesState.map {
+                    FileItemUi(
+                        key = it.id,
+                        name = it.name,
+                        isDirectory = it.isDirectory,
+                        size = it.size,
+                        sizeText = if (it.isDirectory) null else it.size.toBytesString(),
+                        modifiedText = if (it.isDirectory) null else {
+                            (elapsedTick - it.lastModified).coerceAtLeast(0).elapsedIntervalString(context)
+                        }
+                    )
+                }
+
+                FilesScreen(
+                    title = context.getString(R.string.files),
+                    files = items,
+                    currentInBaseDir = currentInBaseDirState,
+                    configurationEditable = configurationEditableState,
+                    onBackClick = { requests.trySend(Request.PopStack) },
+                    onNewClick = { requests.trySend(Request.ImportFile(null)) },
+                    onFileClick = { item ->
+                        filesState.firstOrNull { it.id == item.key }?.let { requestOpen(it) }
+                    },
+                    onFileImportClick = { item ->
+                        filesState.firstOrNull { it.id == item.key }?.let { requests.trySend(Request.ImportFile(it)) }
+                    },
+                    onFileExportClick = { item ->
+                        filesState.firstOrNull { it.id == item.key }?.let { requests.trySend(Request.ExportFile(it)) }
+                    },
+                    onFileRenameClick = { item ->
+                        filesState.firstOrNull { it.id == item.key }?.let { requests.trySend(Request.RenameFile(it)) }
+                    },
+                    onFileDeleteClick = { item ->
+                        filesState.firstOrNull { it.id == item.key }?.let { requests.trySend(Request.DeleteFile(it)) }
+                    }
+                )
+            }
+        }
+    }
 
     var configurationEditable: Boolean
-        get() = binding.configurationEditable
+        get() = configurationEditableState
         set(value) {
-            binding.configurationEditable = value
+            configurationEditableState = value
         }
 
     suspend fun swapFiles(files: List<File>, currentInBaseDir: Boolean) {
         withContext(Dispatchers.Main) {
-            adapter.swapDataSet(adapter::files, files)
-            binding.currentInBaseDir = currentInBaseDir
+            filesState = files
+            currentInBaseDirState = currentInBaseDir
         }
     }
 
     fun updateElapsed() {
-        adapter.updateElapsed()
+        elapsedTick = System.currentTimeMillis()
     }
 
     suspend fun requestFileName(name: String): String {
@@ -61,90 +107,11 @@ class FilesDesign(context: Context) : Design<FilesDesign.Request>(context) {
         )
     }
 
-    init {
-        binding.self = this
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.mainList.recyclerList.also {
-            it.applyLinearAdapter(context, adapter)
-            it.bindAppBarElevation(binding.activityBarLayout)
-        }
-    }
-
     private fun requestOpen(file: File) {
         if (file.isDirectory) {
             requests.trySend(Request.OpenDirectory(file))
         } else {
             requests.trySend(Request.OpenFile(file))
         }
-    }
-
-    fun requestRename(dialog: Dialog, file: File) {
-        requests.trySend(Request.RenameFile(file))
-
-        dialog.dismiss()
-    }
-
-    fun requestImport(dialog: Dialog, file: File) {
-        requests.trySend(Request.ImportFile(file))
-
-        dialog.dismiss()
-    }
-
-    fun requestExport(dialog: Dialog, file: File) {
-        requests.trySend(Request.ExportFile(file))
-
-        dialog.dismiss()
-    }
-
-    fun requestDelete(dialog: Dialog, file: File) {
-        requests.trySend(Request.DeleteFile(file))
-
-        dialog.dismiss()
-    }
-
-    fun requestNew() {
-        requests.trySend(Request.ImportFile(null))
-    }
-
-    private fun requestMore(anchor: View, file: File) {
-        val popupView = DialogFilesPopupBinding
-            .inflate(context.layoutInflater, null, false)
-        popupView.master = this
-        popupView.file = file
-        popupView.currentInBase = this.binding.currentInBaseDir
-        popupView.configurationEditable = this.binding.configurationEditable
-        val popupWindow = android.widget.PopupWindow(
-            popupView.root,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        )
-        popupView.self = object : Dialog(context) {
-            override fun dismiss() {
-                popupWindow.dismiss()
-            }
-        }
-        popupWindow.elevation = 0f
-        popupWindow.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-        val displayMetrics = context.resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        popupView.root.measure(
-            android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
-            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
-        )
-        val popupWidth = popupView.root.measuredWidth
-        val anchorLocation = IntArray(2)
-        anchor.getLocationOnScreen(anchorLocation)
-        val anchorRight = anchorLocation[0] + anchor.width
-        val anchorBottom = anchorLocation[1] + anchor.height
-        val margin = context.getPixels(com.github.kr328.clash.design.R.dimen.dialog_menu_item_padding)
-        val offset = (24 * context.resources.displayMetrics.density).toInt()
-        var x = anchorRight - popupWidth + offset
-        x = x.coerceAtLeast(margin - offset)
-        x = x.coerceAtMost(screenWidth - popupWidth - margin + offset)
-        val y = anchorBottom
-        popupWindow.showAtLocation(binding.root, android.view.Gravity.NO_GRAVITY, x, y)
     }
 }

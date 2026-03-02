@@ -1,17 +1,20 @@
 package com.github.kr328.clash.design
 
-import android.app.Dialog
 import android.content.Context
 import android.view.View
-import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
-import com.github.kr328.clash.design.adapter.ProfileAdapter
-import com.github.kr328.clash.design.databinding.DesignProfilesBinding
-import com.github.kr328.clash.design.databinding.DialogProfilesMenuBinding
-import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.github.kr328.clash.design.compose.ProfileItemUi
+import com.github.kr328.clash.design.compose.ProfileMenuDialog
+import com.github.kr328.clash.design.compose.ProfilesScreen
 import com.github.kr328.clash.design.ui.ToastDuration
-import com.github.kr328.clash.design.util.*
+import com.github.kr328.clash.design.util.elapsedIntervalString
 import com.github.kr328.clash.service.model.Profile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,31 +30,73 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
         data class Delete(val profile: Profile) : Request()
     }
 
-    private val binding = DesignProfilesBinding
-        .inflate(context.layoutInflater, context.root, false)
-    private val adapter = ProfileAdapter(context, this::requestActive, this::showMenu)
+    private var profilesState by mutableStateOf<List<Profile>>(emptyList())
+    private var menuProfileState by mutableStateOf<Profile?>(null)
+    private var updatableState by mutableStateOf(false)
+    private var elapsedTick by mutableLongStateOf(System.currentTimeMillis())
 
-    private var allUpdating: Boolean
-        get() = adapter.states.allUpdating;
-        set(value) {
-            adapter.states.allUpdating = value
+    private var allUpdating: Boolean = false
+
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                val items = profilesState.map {
+                    ProfileItemUi(
+                        name = it.name,
+                        type = when (it.type) {
+                            Profile.Type.File -> "File"
+                            Profile.Type.Url -> "URL"
+                            Profile.Type.External -> "External"
+                        },
+                        isActive = it.active,
+                        elapsedTime = (elapsedTick - it.updatedAt).coerceAtLeast(0).elapsedIntervalString(context),
+                        isPending = it.pending,
+                        isImported = it.imported,
+                        isFileType = it.type == Profile.Type.File
+                    )
+                }
+
+                ProfilesScreen(
+                    title = context.getString(R.string.profile),
+                    profiles = items,
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onCreateClick = { requestCreate() },
+                    onUpdateAllClick = { requestUpdateAll() },
+                    onProfileClick = { index, _ ->
+                        profilesState.getOrNull(index)?.let { requestActive(it) }
+                    },
+                    onProfileMenuClick = { index, _ ->
+                        menuProfileState = profilesState.getOrNull(index)
+                    },
+                    onProfileUpdate = { index, _ ->
+                        profilesState.getOrNull(index)?.let { requests.trySend(Request.Update(it)) }
+                    },
+                    onProfileEdit = { index, _ ->
+                        profilesState.getOrNull(index)?.let { requests.trySend(Request.Edit(it)) }
+                    },
+                    onProfileDuplicate = { index, _ ->
+                        profilesState.getOrNull(index)?.let { requests.trySend(Request.Duplicate(it)) }
+                    },
+                    onProfileDelete = { index, _ ->
+                        profilesState.getOrNull(index)?.let { requests.trySend(Request.Delete(it)) }
+                    },
+                    showUpdateAll = updatableState
+                )
+            }
         }
-    private val rotateAnimation : Animation = AnimationUtils.loadAnimation(context, R.anim.rotate_infinite)
-
-    override val root: View
-        get() = binding.root
+    }
 
     suspend fun patchProfiles(profiles: List<Profile>) {
-        adapter.apply {
-            patchDataSet(this::profiles, profiles, id = { it.uuid })
-        }
-
         val updatable = withContext(Dispatchers.Default) {
             profiles.any { it.imported && it.type != Profile.Type.File }
         }
 
         withContext(Dispatchers.Main) {
-            binding.updateView.visibility = if (updatable) View.VISIBLE else View.GONE
+            profilesState = profiles
+            updatableState = updatable
         }
     }
 
@@ -64,67 +109,16 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
     }
 
     fun updateElapsed() {
-        adapter.updateElapsed()
-    }
-
-    init {
-        binding.self = this
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.mainList.recyclerList.also {
-            it.bindAppBarElevation(binding.activityBarLayout)
-            it.applyLinearAdapter(context, adapter)
-        }
-    }
-
-    private fun showMenu(view: View, profile: Profile) {
-        val popupView = DialogProfilesMenuBinding
-            .inflate(context.layoutInflater, null, false)
-        popupView.master = this
-        popupView.profile = profile
-        val popupWindow = android.widget.PopupWindow(
-            popupView.root,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        )
-        popupView.self = object : Dialog(context) {
-            override fun dismiss() {
-                popupWindow.dismiss()
-            }
-        }
-        popupWindow.elevation = 0f
-        popupWindow.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT))
-        val displayMetrics = context.resources.displayMetrics
-        val screenWidth = displayMetrics.widthPixels
-        popupView.root.measure(
-            android.view.View.MeasureSpec.makeMeasureSpec(screenWidth, android.view.View.MeasureSpec.AT_MOST),
-            android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED)
-        )
-        val popupWidth = popupView.root.measuredWidth
-        val anchorLocation = IntArray(2)
-        view.getLocationOnScreen(anchorLocation)
-        val anchorRight = anchorLocation[0] + view.width
-        val anchorBottom = anchorLocation[1] + view.height
-        val margin = context.getPixels(com.github.kr328.clash.design.R.dimen.dialog_menu_item_padding)
-        val offset = (24 * context.resources.displayMetrics.density).toInt()
-        var x = anchorRight - popupWidth + offset
-        x = x.coerceAtLeast(margin - offset)
-        x = x.coerceAtMost(screenWidth - popupWidth - margin + offset)
-        val y = anchorBottom
-        popupWindow.showAtLocation(binding.root, android.view.Gravity.NO_GRAVITY, x, y)
+        elapsedTick = System.currentTimeMillis()
     }
 
     fun requestUpdateAll() {
-        allUpdating = true;
-        changeUpdateAllButtonStatus()
+        allUpdating = true
         requests.trySend(Request.UpdateAll)
     }
 
     fun finishUpdateAll() {
-        allUpdating = false;
-        changeUpdateAllButtonStatus()
+        allUpdating = false
     }
 
     fun requestCreate() {
@@ -133,37 +127,5 @@ class ProfilesDesign(context: Context) : Design<ProfilesDesign.Request>(context)
 
     private fun requestActive(profile: Profile) {
         requests.trySend(Request.Active(profile))
-    }
-
-    fun requestUpdate(dialog: Dialog, profile: Profile) {
-        requests.trySend(Request.Update(profile))
-
-        dialog.dismiss()
-    }
-
-    fun requestEdit(dialog: Dialog, profile: Profile) {
-        requests.trySend(Request.Edit(profile))
-
-        dialog.dismiss()
-    }
-
-    fun requestDuplicate(dialog: Dialog, profile: Profile) {
-        requests.trySend(Request.Duplicate(profile))
-
-        dialog.dismiss()
-    }
-
-    fun requestDelete(dialog: Dialog, profile: Profile) {
-        requests.trySend(Request.Delete(profile))
-
-        dialog.dismiss()
-    }
-
-    private fun changeUpdateAllButtonStatus() {
-        if (allUpdating) {
-            binding.updateView.startAnimation(rotateAnimation)
-        } else {
-            binding.updateView.clearAnimation()
-        }
     }
 }

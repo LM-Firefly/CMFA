@@ -148,7 +148,6 @@ class NewProfileActivity : BaseActivity<NewProfileDesign>() {
 
                 val name = activity.applicationInfo.loadLabel(packageManager)
                 val summary = activity.loadLabel(packageManager)
-                val icon = activity.loadIcon(packageManager)
                 val intent = Intent(Intents.ACTION_PROVIDE_URL)
                     .setComponent(
                         ComponentName(
@@ -157,7 +156,7 @@ class NewProfileActivity : BaseActivity<NewProfileDesign>() {
                         )
                     )
 
-                ProfileProvider.External(name.toString(), summary.toString(), icon, intent)
+                ProfileProvider.External(name.toString(), summary.toString(), intent = intent)
             }
 
             listOf(

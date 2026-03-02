@@ -1,4 +1,5 @@
-package com.github.kr328.clash.design.adapter
+﻿package com.github.kr328.clash.design.adapter
+import android.widget.FrameLayout
 
 import android.content.Context
 import android.graphics.Color
@@ -7,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import com.github.kr328.clash.design.R
-import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.resolveThemedColor
 
 class PopupListAdapter(
@@ -32,7 +32,7 @@ class PopupListAdapter(
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view = convertView ?: context.layoutInflater
+        val view = convertView ?: android.view.LayoutInflater.from(context)
             .inflate(android.R.layout.simple_list_item_1, parent, false)
 
         val text: TextView = view.findViewById(android.R.id.text1)
@@ -57,3 +57,4 @@ class PopupListAdapter(
         return view
     }
 }
+

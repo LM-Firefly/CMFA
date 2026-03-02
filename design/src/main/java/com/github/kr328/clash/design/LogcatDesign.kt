@@ -1,16 +1,23 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.getSystemService
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.kr328.clash.core.model.LogMessage
-import com.github.kr328.clash.design.adapter.LogMessageAdapter
-import com.github.kr328.clash.design.databinding.DesignLogcatBinding
+import com.github.kr328.clash.design.compose.LogItemUi
+import com.github.kr328.clash.design.compose.LogLevel
+import com.github.kr328.clash.design.compose.LogcatScreen
 import com.github.kr328.clash.design.ui.ToastDuration
-import com.github.kr328.clash.design.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,15 +30,29 @@ class LogcatDesign(
         Close, Delete, Export
     }
 
-    private val binding = DesignLogcatBinding
-        .inflate(context.layoutInflater, context.root, false)
-    private val adapter = LogMessageAdapter(context) {
-        launch {
-            val data = ClipData.newPlainText("log_message", it.message)
+    private var logItems by mutableStateOf<List<LogItemUi>>(emptyList())
+    private var updateTick by mutableIntStateOf(0)
 
-            context.getSystemService<ClipboardManager>()?.setPrimaryClip(data)
-
-            showToast(R.string.copied, ToastDuration.Short)
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                LogcatScreen(
+                    title = context.getString(R.string.logcat),
+                    streaming = streaming,
+                    logs = logItems,
+                    updateTick = updateTick,
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onDeleteClick = { request(Request.Delete) },
+                    onExportClick = { request(Request.Export) },
+                    onCloseStreamClick = { request(Request.Close) },
+                    onMessageLongClick = { item ->
+                        copyMessage(item.message)
+                    }
+                )
+            }
         }
     }
 
@@ -41,34 +62,37 @@ class LogcatDesign(
 
     suspend fun patchMessages(messages: List<LogMessage>, removed: Int, appended: Int) {
         withContext(Dispatchers.Main) {
-            adapter.messages = messages
+            logItems = messages.map {
+                LogItemUi(
+                    level = it.level.toUiLevel(),
+                    time = it.time.time,
+                    message = it.message,
+                    key = "${it.time.time}:${it.message.hashCode()}"
+                )
+            }
 
-            adapter.notifyItemRangeInserted(adapter.messages.size, appended)
-            adapter.notifyItemRangeRemoved(0, removed)
-
-            if (streaming && binding.recyclerList.isTop) {
-                binding.recyclerList.scrollToPosition(messages.size - 1)
+            if (removed > 0 || appended > 0) {
+                updateTick += 1
             }
         }
     }
 
-    override val root: View
-        get() = binding.root
-
-    init {
-        binding.self = this
-        binding.streaming = streaming
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.recyclerList.bindAppBarElevation(binding.activityBarLayout)
-
-        binding.recyclerList.layoutManager = LinearLayoutManager(context).apply {
-            if (streaming) {
-                reverseLayout = true
-                stackFromEnd = true
-            }
+    private fun copyMessage(message: String) {
+        launch(Dispatchers.Main) {
+            val data = ClipData.newPlainText("log_message", message)
+            context.getSystemService<ClipboardManager>()?.setPrimaryClip(data)
+            showToast(R.string.copied, ToastDuration.Short)
         }
-        binding.recyclerList.adapter = adapter
+    }
+
+    private fun LogMessage.Level.toUiLevel(): LogLevel {
+        return when (this) {
+            LogMessage.Level.Debug -> LogLevel.DEBUG
+            LogMessage.Level.Info -> LogLevel.INFO
+            LogMessage.Level.Warning -> LogLevel.WARNING
+            LogMessage.Level.Error -> LogLevel.ERROR
+            LogMessage.Level.Silent -> LogLevel.SILENT
+            LogMessage.Level.Unknown -> LogLevel.INFO
+        }
     }
 }

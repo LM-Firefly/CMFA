@@ -1,79 +1,64 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.Context
 import android.net.Uri
 import android.view.View
-import com.github.kr328.clash.design.databinding.DesignSettingsCommonBinding
-import com.github.kr328.clash.design.preference.category
-import com.github.kr328.clash.design.preference.clickable
-import com.github.kr328.clash.design.preference.preferenceScreen
-import com.github.kr328.clash.design.preference.tips
-import com.github.kr328.clash.design.util.applyFrom
-import com.github.kr328.clash.design.util.bindAppBarElevation
-import com.github.kr328.clash.design.util.layoutInflater
-import com.github.kr328.clash.design.util.root
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.text.HtmlCompat
+import com.github.kr328.clash.design.compose.HelpLinkItemUi
+import com.github.kr328.clash.design.compose.HelpScreen
 
 class HelpDesign(
     context: Context,
     openLink: (Uri) -> Unit,
 ) : Design<Unit>(context) {
-    private val binding = DesignSettingsCommonBinding
-        .inflate(context.layoutInflater, context.root, false)
+    private val links = listOf(
+        HelpLinkItemUi(
+            title = context.getString(R.string.clash_wiki),
+            summary = context.getString(R.string.clash_wiki_url),
+            url = context.getString(R.string.clash_wiki_url)
+        ),
+        HelpLinkItemUi(
+            title = context.getString(R.string.clash_meta_wiki),
+            summary = context.getString(R.string.clash_meta_wiki_url),
+            url = context.getString(R.string.clash_meta_wiki_url)
+        ),
+        HelpLinkItemUi(
+            title = context.getString(R.string.clash_meta_core),
+            summary = context.getString(R.string.clash_meta_core_url),
+            url = context.getString(R.string.clash_meta_core_url)
+        ),
+        HelpLinkItemUi(
+            title = context.getString(R.string.clash_meta_for_android),
+            summary = context.getString(R.string.meta_github_url),
+            url = context.getString(R.string.meta_github_url)
+        )
+    )
 
-    override val root: View
-        get() = binding.root
-
-    init {
-        binding.surface = surface
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.scrollRoot.bindAppBarElevation(binding.activityBarLayout)
-
-        val screen = preferenceScreen(context) {
-            tips(R.string.tips_help)
-
-            category(R.string.document)
-
-            clickable(
-                title = R.string.clash_wiki,
-                summary = R.string.clash_wiki_url
-            ) {
-                clicked {
-                    openLink(Uri.parse(context.getString(R.string.clash_wiki_url)))
-                }
-            }
-
-            clickable(
-                title = R.string.clash_meta_wiki,
-                summary = R.string.clash_meta_wiki_url
-            ) {
-                clicked {
-                    openLink(Uri.parse(context.getString(R.string.clash_meta_wiki_url)))
-                }
-            }
-
-            category(R.string.sources)
-
-            clickable(
-                title = R.string.clash_meta_core,
-                summary = R.string.clash_meta_core_url
-            ) {
-                clicked {
-                    openLink(Uri.parse(context.getString(R.string.clash_meta_core_url)))
-                }
-            }
-
-            clickable(
-                title = R.string.clash_meta_for_android,
-                summary = R.string.meta_github_url
-            ) {
-                clicked {
-                    openLink(Uri.parse(context.getString(R.string.meta_github_url)))
-                }
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                // Convert HTML string to plain text
+                val tipsHtml = context.getString(R.string.tips_help)
+                val tipsText = HtmlCompat.fromHtml(tipsHtml, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                
+                HelpScreen(
+                    title = context.getString(R.string.help),
+                    tips = tipsText,
+                    documentTitle = context.getString(R.string.document),
+                    sourcesTitle = context.getString(R.string.sources),
+                    documentLinks = links.take(2),
+                    sourceLinks = links.drop(2),
+                    onBackClick = {
+                        (context as? AppCompatActivity)?.onBackPressedDispatcher?.onBackPressed()
+                    },
+                    onOpenLink = { openLink(Uri.parse(it.url)) }
+                )
             }
         }
-
-        binding.content.addView(screen.root)
     }
 }

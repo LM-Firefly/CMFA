@@ -2,14 +2,10 @@ package com.github.kr328.clash.design.preference
 
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.widget.FrameLayout
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.github.kr328.clash.common.compat.getDrawableCompat
-import com.github.kr328.clash.design.databinding.PreferenceSwitchBinding
-import com.github.kr328.clash.design.util.layoutInflater
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.reflect.KMutableProperty0
 
 interface SwitchPreference : Preference {
@@ -26,79 +22,26 @@ fun PreferenceScreen.switch(
     @StringRes summary: Int? = null,
     configure: SwitchPreference.() -> Unit = {},
 ): SwitchPreference {
-    val binding = PreferenceSwitchBinding
-        .inflate(context.layoutInflater, root, false)
-
+    // TODO: Implement switch preference UI
+    val view = FrameLayout(context)
+    
     val impl = object : SwitchPreference {
-        override val view: View
-            get() = binding.root
-        override var icon: Drawable?
-            get() = binding.iconView.background
-            set(value) {
-                binding.iconView.background = value
-                binding.iconView.visibility = if (value == null) View.GONE else View.VISIBLE
-            }
-        override var title: CharSequence?
-            get() = binding.titleView.text
-            set(value) {
-                binding.titleView.text = value
-            }
-        override var summary: CharSequence?
-            get() = binding.summaryView.text
-            set(value) {
-                binding.summaryView.text = value
-            }
+        override val view: View = view
+        override var icon: Drawable? = if (icon != null) context.getDrawableCompat(icon) else null
+        override var title: CharSequence? = if (title != null) context.getString(title) else null
+        override var summary: CharSequence? = if (summary != null) context.getString(summary) else null
         override var listener: OnChangedListener? = null
         override var enabled: Boolean
-            get() = binding.root.isEnabled
+            get() = view.isEnabled
             set(value) {
-                binding.root.isEnabled = value
-                binding.root.isFocusable = value
-                binding.root.isClickable = value
-                binding.root.alpha = if (value) 1.0f else 0.33f
+                view.isEnabled = value
+                view.isFocusable = value
+                view.isClickable = value
+                view.alpha = if (value) 1.0f else 0.33f
             }
-
-    }
-
-    if (icon != null) {
-        impl.icon = context.getDrawableCompat(icon)
-    } else {
-        impl.icon = null
-    }
-
-    if (title != null) {
-        impl.title = context.getString(title)
-    }
-
-    if (summary != null) {
-        impl.summary = context.getString(summary)
     }
 
     impl.configure()
-
     addElement(impl)
-
-    launch(Dispatchers.Main) {
-        val initialValue = withContext(Dispatchers.IO) {
-            value.get()
-        }
-
-        binding.switchView.apply {
-            isChecked = initialValue
-
-            binding.root.setOnClickListener {
-                isChecked = !isChecked
-
-                this@switch.launch(Dispatchers.Main) {
-                    withContext(Dispatchers.IO) {
-                        value.set(isChecked)
-                    }
-
-                    impl.listener?.onChanged()
-                }
-            }
-        }
-    }
-
     return impl
 }

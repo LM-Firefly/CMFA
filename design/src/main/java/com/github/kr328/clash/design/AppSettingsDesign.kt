@@ -1,105 +1,105 @@
-package com.github.kr328.clash.design
+﻿package com.github.kr328.clash.design
 
 import android.content.Context
 import android.view.View
-import com.github.kr328.clash.design.databinding.DesignSettingsCommonBinding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.github.kr328.clash.design.compose.AppSettingsScreen
+import com.github.kr328.clash.design.compose.SimpleAlertDialog
 import com.github.kr328.clash.design.model.Behavior
 import com.github.kr328.clash.design.model.DarkMode
-import com.github.kr328.clash.design.preference.*
 import com.github.kr328.clash.design.store.UiStore
-import com.github.kr328.clash.design.util.applyFrom
-import com.github.kr328.clash.design.util.bindAppBarElevation
-import com.github.kr328.clash.design.util.layoutInflater
-import com.github.kr328.clash.design.util.root
 import com.github.kr328.clash.service.store.ServiceStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class AppSettingsDesign(
     context: Context,
-    uiStore: UiStore,
-    srvStore: ServiceStore,
-    behavior: Behavior,
-    running: Boolean,
-    onHideIconChange: (hide: Boolean) -> Unit,
+    private val uiStore: UiStore,
+    private val srvStore: ServiceStore,
+    private val behavior: Behavior,
+    private val running: Boolean,
+    private val onHideIconChange: (hide: Boolean) -> Unit
 ) : Design<AppSettingsDesign.Request>(context) {
     enum class Request {
         ReCreateAllActivities
     }
 
-    private val binding = DesignSettingsCommonBinding
-        .inflate(context.layoutInflater, context.root, false)
+    private val autoRestartState = mutableStateOf(behavior.autoRestart)
+    private val darkModeState = mutableStateOf(uiStore.darkMode)
+    private val hideAppIconState = mutableStateOf(uiStore.hideAppIcon)
+    private val hideFromRecentsState = mutableStateOf(uiStore.hideFromRecents)
+    private val dynamicNotificationState = mutableStateOf(srvStore.dynamicNotification)
+    private val showDarkModeDialogState = mutableStateOf(false)
 
-    override val root: View
-        get() = binding.root
-
-    init {
-        binding.surface = surface
-
-        binding.activityBarLayout.applyFrom(context)
-
-        binding.scrollRoot.bindAppBarElevation(binding.activityBarLayout)
-
-        val screen = preferenceScreen(context) {
-            category(R.string.behavior)
-
-            switch(
-                value = behavior::autoRestart,
-                icon = R.drawable.ic_baseline_restore,
-                title = R.string.auto_restart,
-                summary = R.string.allow_clash_auto_restart,
-            )
-
-            category(R.string.interface_)
-
-            selectableList(
-                value = uiStore::darkMode,
-                values = DarkMode.values(),
-                valuesText = arrayOf(
-                    R.string.follow_system_android_10,
-                    R.string.always_light,
-                    R.string.always_dark
-                ),
-                icon = R.drawable.ic_baseline_brightness_4,
-                title = R.string.dark_mode
-            ) {
-                listener = OnChangedListener {
-                    requests.trySend(Request.ReCreateAllActivities)
+    override val root: View = ComposeView(context).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+        setContent {
+            MaterialTheme {
+                if (showDarkModeDialogState.value) {
+                    SimpleAlertDialog(
+                        title = "Dark Mode",
+                        items = DarkMode.values().toList(),
+                        selectedItem = darkModeState.value,
+                        itemLabel = { darkMode ->
+                            when (darkMode) {
+                                DarkMode.Auto -> context.getString(R.string.follow_system_android_10)
+                                DarkMode.ForceLight -> context.getString(R.string.always_light)
+                                DarkMode.ForceDark -> context.getString(R.string.always_dark)
+                            }
+                        },
+                        onItemSelected = { selected ->
+                            darkModeState.value = selected
+                            launch(Dispatchers.Default) { uiStore.darkMode = selected }
+                        },
+                        onDismiss = { showDarkModeDialogState.value = false }
+                    )
                 }
-            }
 
-            switch(
-                value = uiStore::hideAppIcon,
-                icon = R.drawable.ic_baseline_hide,
-                title = R.string.hide_app_icon_title,
-                summary = R.string.hide_app_icon_desc,
-            ) {
-                listener = OnChangedListener {
-                    onHideIconChange(uiStore::hideAppIcon.get())
-                }
-            }
-
-            switch(
-                value = uiStore::hideFromRecents,
-                icon = R.drawable.ic_baseline_stack,
-                title = R.string.hide_from_recents_title,
-                summary = R.string.hide_from_recents_desc,
-            ) {
-                listener = OnChangedListener {
-                    requests.trySend(Request.ReCreateAllActivities)
-                }
-            }
-
-            category(R.string.service)
-
-            switch(
-                value = srvStore::dynamicNotification,
-                icon = R.drawable.ic_baseline_domain,
-                title = R.string.show_traffic,
-                summary = R.string.show_traffic_summary
-            ) {
-                enabled = !running
+                AppSettingsScreen(
+                    title = context.getString(R.string.app),
+                    autoRestart = autoRestartState.value,
+                    onAutoRestartChange = { enabled ->
+                        autoRestartState.value = enabled
+                        launch {
+                            behavior.autoRestart = enabled
+                            requests.send(Request.ReCreateAllActivities)
+                        }
+                    },
+                    darkMode = when (darkModeState.value) {
+                        DarkMode.Auto -> context.getString(R.string.follow_system_android_10)
+                        DarkMode.ForceLight -> context.getString(R.string.always_light)
+                        DarkMode.ForceDark -> context.getString(R.string.always_dark)
+                    },
+                    onDarkModeClick = { showDarkModeDialogState.value = true },
+                    hideAppIcon = hideAppIconState.value,
+                    onHideAppIconChange = { hide ->
+                        hideAppIconState.value = hide
+                        launch(Dispatchers.Default) {
+                            uiStore.hideAppIcon = hide
+                            onHideIconChange(hide)
+                        }
+                    },
+                    hideFromRecents = hideFromRecentsState.value,
+                    onHideFromRecentsChange = { hide ->
+                        hideFromRecentsState.value = hide
+                        launch(Dispatchers.Default) {
+                            uiStore.hideFromRecents = hide
+                            requests.send(Request.ReCreateAllActivities)
+                        }
+                    },
+                    dynamicNotification = dynamicNotificationState.value,
+                    onDynamicNotificationChange = { enabled ->
+                        if (running) return@AppSettingsScreen
+                        dynamicNotificationState.value = enabled
+                        launch(Dispatchers.Default) { srvStore.dynamicNotification = enabled }
+                    },
+                    onBackClick = { (context as? android.app.Activity)?.finish() }
+                )
             }
         }
-
-        binding.content.addView(screen.root)
     }
 }

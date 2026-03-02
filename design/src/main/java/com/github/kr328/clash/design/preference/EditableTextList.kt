@@ -9,6 +9,21 @@ import com.github.kr328.clash.design.dialog.requestModelTextInput
 import kotlinx.coroutines.*
 import kotlin.reflect.KMutableProperty0
 
+// Temporary stub for EditableListOverlay
+enum class EditableListOverlayResult {
+    Cancel, Apply, Reset
+}
+
+suspend fun <T> requestEditableListOverlay(
+    context: Context,
+    adapter: EditableTextListAdapter<T>,
+    title: CharSequence,
+    onAdd: suspend () -> Unit
+): EditableListOverlayResult {
+    // TODO: Implement proper overlay dialog
+    return EditableListOverlayResult.Cancel
+}
+
 interface EditableTextListPreference<T> : ClickablePreference {
     var placeholder: CharSequence?
 
