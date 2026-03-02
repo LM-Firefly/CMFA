@@ -169,7 +169,7 @@ fun Profile.getProfileRemainingTraffic(context: Context): String {
 
 fun Profile.getProfileUsedTraffic(context: Context): String {
     if (total <= 1L) return ""
-    val used = (upload + download).toLong()
+    val used = upload + download
     return context.getString(R.string.used_traffic, used.toBytesString(), total.toBytesString())
 }
 
